@@ -1,20 +1,31 @@
-cmake_minimum_required(VERSION 3.9)
+# cmake required
+cmake_minimum_required(VERSION 3.8)
 
-# global variable
+# project name and version
 set(SHADOWSOCKS_NAME shadowsocks)
+set(SHADOWSOCKS_VERSION 0.0.1)
 
-# project name
-project(${SHADOWSOCKS_NAME})
+# settup build type
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release FORCE)
+endif ()
 
-# cpp standard
+# cxx standard
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-# directories to include
-include_directories(${CMAKE_SOURCE_DIR}/include)
-aux_source_directory(${CMAKE_SOURCE_DIR}/src SHADOWSOCKS_SOURCES)
+# cxx compile flags
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+endif ()
 
-# openssl libraries
-link_libraries(crypto)
+# include and sources dir
+set(SHADOWSOCKS_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
+set(SHADOWSOCKS_SOURCES_DIR ${CMAKE_SOURCE_DIR}/src/lib)
 
-# cmake target
-add_executable(${SHADOWSOCKS_NAME} ${SHADOWSOCKS_SOURCES} ${CMAKE_SOURCE_DIR}/include include/shadowsocks/ss_logger.h src/ss_logger.cc include/shadowsocks/ss_selector.h src/ss_selector.cc include/shadowsocks/ss_client.h src/ss_client.cc include/shadowsocks/ss_server.h include/shadowsocks/ss_service.h src/ss_service.cc include/shadowsocks/ss_daemon.h src/ss_daemon.cc src/ss_server.cc)
+aux_source_directory(${SHADOWSOCKS_SOURCES_DIR} SHADOWSOCKS_SOURCES)
+
+# sub target
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/client)
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/server)

@@ -1,30 +1,29 @@
 #ifndef __SHADOWSOCKS_CORE_INCLUDED__
 #define __SHADOWSOCKS_CORE_INCLUDED__
 
-#include "shadowsocks/ss_config.h"
-#include "shadowsocks/ss_crypto.h"
-#include "shadowsocks/ss_logger.h"
-#include "shadowsocks/ss_service.h"
-#include "shadowsocks/ss_server.h"
-#include "shadowsocks/ss_client.h"
+// error code
+#define SHADOWSOCKS_MODULE_INVALID_CODE 1
+#define UNKNOWN_MODULE_VERSION_ERROR "unknown"
+
+# ifdef SHADOWSOCKS_SERVER_MODULE
+#   include "shadowsocks/server/ss_server.h"
+# else
+#   ifdef SHADOWSOCKS_CLIENT_MODULE
+#     include "shadowsocks/client/ss_client.h"
+#   else
+#     define MODULE_VERSION UNKNOWN_MODULE_VERSION_ERROR
+#   endif  // SHADOWSOCKS_CLIENT_MODULE
+# endif  // SHADOWSOCKS_SERVER_MODULE
 
 
 class Ss_Core {
     public:
-        static Ss_Config *parse_args(int argc, char *argv[]);
-        static void start_server();
+        static void check_version();
 
     public:
-        static void set_config(Ss_Config *config);
-        static Ss_Config *get_config();
-
-        static void set_logger(Ss_Logger *logger);
-        static Ss_Logger *get_logger();
-
-    private:
-        static Ss_Config *config;
-        static Ss_Logger *logger;
+        constexpr static const char *module_name = MODULE_NAME;
+        constexpr static const char *module_version = MODULE_VERSION;
 };
 
 
-#endif
+#endif  // __SHADOWSOCKS_CORE_INCLUDED__

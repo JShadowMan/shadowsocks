@@ -1,19 +1,21 @@
 #ifndef __SHADOWSOCKS_CONFIG_INCLUDED__
 #define __SHADOWSOCKS_CONFIG_INCLUDED__
 
-#include <string>
 #include <map>
+#include <string>
 
 
 class Ss_Config {
     public:
-        Ss_Config() = default;
-        explicit Ss_Config(std::string &config);
+        Ss_Config(int argc, char *argv[]);
 
-    public:
-        bool is_server_config();
-        bool is_client_config();
+    private:
+        using ArgsMap = std::map<std::string, std::string>;
+
+    private:
+        ArgsMap *parse_args(int argc, char *argv[]);
 };
 
 
-#endif
+
+#endif  // __SHADOWSOCKS_CONFIG_INCLUDED__
