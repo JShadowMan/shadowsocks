@@ -9,11 +9,17 @@ class Ss_Config {
     public:
         Ss_Config(int argc, char *argv[]);
 
+    public:
+        std::string operator<<();
+
     private:
         using ArgsMap = std::map<std::string, std::string>;
 
     private:
-        ArgsMap *parse_args(int argc, char *argv[]);
+        void parse_args(int argc, char *argv[]);
+
+    private:
+        ArgsMap _config;
 };
 
 

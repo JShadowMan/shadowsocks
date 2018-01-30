@@ -4,11 +4,14 @@
 #include "shadowsocks/ss_core.h"
 
 
+/**
+ * check version of shadowsocks-server/client
+ */
 void Ss_Core::check_version() {
-    if (std::strcmp(module_version, UNKNOWN_MODULE_VERSION_ERROR) == 0) {
+    if (std::strcmp(module_version, ERROR_UNKNOWN_MODULE_VERSION) == 0) {
         /**
          * \todo logger
          */
-        std::exit(SHADOWSOCKS_MODULE_INVALID_CODE);
+        std::exit(EXIT_SHADOWSOCKS_MODULE_INVALID);
     }
 }
