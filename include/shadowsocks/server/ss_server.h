@@ -3,10 +3,8 @@
 
 #include <getopt.h>
 
+/* shadowsocks-module information */
 #define MODULE_NAME "shadowsocks-server"
 #define MODULE_VERSION "0.0.1"
-
-#define MODULE_ARGS_SHORT_OPTS ""
-
 
 #endif  // __SHADOWSOCKS_SERVER_INCLUDED__
