@@ -11,11 +11,13 @@
 #define EXIT_INVALID_OPTION 0x0002
 #define ERROR_INVALID_OPTION "Invalid option '?'"
 
+
 /* other definitions */
 #define FORMAT_PLACEHOLDER_FLAG ('?')
 
 /* other standard headers */
 #include <string>
+#include <initializer_list>
 
 /* include server/client header */
 # ifdef SHADOWSOCKS_SERVER_MODULE
@@ -30,9 +32,10 @@
 
 /* other shadowsocks-headers */
 #include "shadowsocks/ss_config.h"
+#include "shadowsocks/ss_utils.h"
 
 
-
+/* Class Ss_Core */
 class Ss_Core {
     public:
         static void check_version();
@@ -40,10 +43,6 @@ class Ss_Core {
     public:
         static void trigger_error(int error_code, std::string &error);
         static void trigger_error(int error_code, const char *error);
-
-    public:
-        static std::string *format(const char *format,
-                                   std::initializer_list<const char *> args);
 
     public:
         constexpr static const char *module_name = MODULE_NAME;

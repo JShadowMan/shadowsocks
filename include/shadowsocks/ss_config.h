@@ -6,8 +6,10 @@
 #define GETOPT_OPT_SERVER_ADDRESS ('s')
 #define GETOPT_OPT_SERVER_PORT ('p')
 #define GETOPT_OPT_PASSWORD ('P')
+#define GETOPT_OPT_CONFIG ('c')
 #define GETOPT_OPT_DAEMON ('d')
 #define GETOPT_OPT_METHOD ('m')
+
 
 /** getopt_long definitions
  *
@@ -19,6 +21,7 @@
 #define GETOPT_DEF_SERVER_ADDRESS   { "server-address", required_argument, nullptr, GETOPT_OPT_SERVER_ADDRESS }
 #define GETOPT_DEF_SERVER_PORT      { "server-port",    required_argument, nullptr, GETOPT_OPT_SERVER_PORT }
 #define GETOPT_DEF_PASSWORD         { "server-port",    required_argument, nullptr, GETOPT_OPT_PASSWORD }
+#define GETOPT_DEF_CONFIG           { "config",         optional_argument, nullptr, GETOPT_OPT_CONFIG }
 #define GETOPT_DEF_DAEMON           { "daemon",         required_argument, nullptr, GETOPT_OPT_DAEMON }
 #define GETOPT_DEF_METHOD           { "method",         required_argument, nullptr, GETOPT_OPT_METHOD }
 #define GETOPT_DEF_END              { nullptr, no_argument, nullptr, 0 }
@@ -31,6 +34,7 @@
 extern const struct option module_long_options[];
 extern const char *module_short_options;
 
+
 /* Class Ss_Config */
 class Ss_Config {
     public:
@@ -41,6 +45,7 @@ class Ss_Config {
 
     private:
         void parse_args(int argc, char *argv[]);
+        void check_args();
 
     private:
         ArgsMap _config;

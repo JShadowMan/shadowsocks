@@ -6,6 +6,7 @@ const struct option module_long_options[] = {
     GETOPT_DEF_SERVER_ADDRESS,  // server-address
     GETOPT_DEF_SERVER_PORT,  // server-port
     GETOPT_DEF_PASSWORD,  // password
+    GETOPT_DEF_CONFIG,  // config
     GETOPT_DEF_DAEMON,  // daemon
     GETOPT_DEF_METHOD,  // method
     GETOPT_DEF_END  // end of long options

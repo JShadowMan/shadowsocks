@@ -1,28 +1,26 @@
 #include <iostream>
+#include <vector>
 #include <getopt.h>
 #include "shadowsocks/ss_core.h"
+
 
 /* constant of Ss_Config */
 #define GETOPT_PARSE_COMPLETE (-1)
 #define GETOPT_NOT_MATCHED ('?')
 
-/**
- *
- * @param argc number of argument count
- * @param argv value of each arguments
- */
+
+/* Ss_Config constructor */
 Ss_Config::Ss_Config(int argc, char *argv[]) {
     parse_args(argc, argv);
+    check_args();
 
-    // check arguments
+    // test case
+    for (auto pair : _config) {
+        std::cout << pair.first << " : " << pair.second << std::endl;
+    }
 }
 
-/**
- *
- * @param argc
- * @param argv
- * @return
- */
+/* parse command lines */
 void Ss_Config::parse_args(int argc, char *argv[]) {
     int getopt_result = 0;
     int option_index = -1;
@@ -54,6 +52,10 @@ void Ss_Config::parse_args(int argc, char *argv[]) {
                 _config["password"] = optarg;
                 break;
             }
+            case GETOPT_OPT_CONFIG: {
+                _config["config"] = optarg;
+                break;
+            }
             case GETOPT_OPT_DAEMON: {
                 _config["daemon"] = optarg;
                 break;
@@ -70,7 +72,7 @@ void Ss_Config::parse_args(int argc, char *argv[]) {
                     }
                 }
 
-                auto error = Ss_Core::format(ERROR_INVALID_OPTION, {err});
+                auto error = Ss_Utils::format(ERROR_INVALID_OPTION, {err});
                 Ss_Core::trigger_error(EXIT_INVALID_OPTION, *error);
                 break;
             }
@@ -79,8 +81,14 @@ void Ss_Config::parse_args(int argc, char *argv[]) {
             }
         }
     }
+}
 
-    for (auto pair : _config) {
-        std::cout << pair.first << " : " << pair.second << std::endl;
+/* check configure correct and try setting default value to missing option */
+void Ss_Config::check_args() {
+    /* check `daemon` options */
+    if (_config.find("daemon") != _config.end()) {
+        if (!Ss_Utils::contains<std::string>(_config["daemon"], {"start", "stop", "restart"})) {
+            Ss_Core::trigger_error(EXIT_INVALID_OPTION, *Ss_Utils::format("Invalid daemon value"));
+        }
     }
 }
