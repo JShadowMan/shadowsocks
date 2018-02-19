@@ -19,9 +19,3 @@ void Ss_Core::trigger_error(int error_code, std::string &error) {
     std::cerr << error << std::endl;
     std::exit(error_code);
 }
-
-/* overload of Ss_Core::trigger_error */
-void Ss_Core::trigger_error(int error_code, const char *error) {
-    std::string error_message(error);
-    trigger_error(error_code, error_message);
-}

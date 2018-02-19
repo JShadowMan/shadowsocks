@@ -1,8 +1,10 @@
 #ifndef __SHADOWSOCKS_UTILS_INCLUDED__
 #define __SHADOWSOCKS_UTILS_INCLUDED__
 
+
 /* other standard headers */
 #include <string>
+#include <algorithm>
 #include <initializer_list>
 #include "shadowsocks/ss_core.h"
 
@@ -23,12 +25,7 @@ class Ss_Utils {
 /* check value is in the list *MUST IN HEADER* */
 template <typename T>
 bool Ss_Utils::contains(T value, std::initializer_list<T> list) {
-    for (auto item : list) {
-        if (value == item) {
-            return true;
-        }
-    }
-    return false;
+    return std::find(list.begin(), list.end(), value) != list.end();
 }
 
 

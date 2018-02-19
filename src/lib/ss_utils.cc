@@ -29,7 +29,7 @@ std::string *Ss_Utils::format(const char *format,
 }
 
 /* simple version overload */
-std::string* Ss_Utils::format(const char *format) {
+std::string *Ss_Utils::format(const char *format) {
     auto result = new std::string(Ss_Core::module_name);
     *result = *result + ": " + format;
     return result;

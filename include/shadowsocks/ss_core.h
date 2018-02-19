@@ -42,7 +42,6 @@ class Ss_Core {
 
     public:
         static void trigger_error(int error_code, std::string &error);
-        static void trigger_error(int error_code, const char *error);
 
     public:
         constexpr static const char *module_name = MODULE_NAME;

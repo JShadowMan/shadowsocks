@@ -1,24 +1,11 @@
+#include <iostream>
 #include "shadowsocks/ss_core.h"
 
 
-/* shadowsocks-server commands */
-const struct option module_long_options[] = {
-    GETOPT_DEF_SERVER_ADDRESS,  // server-address
-    GETOPT_DEF_SERVER_PORT,  // server-port
-    GETOPT_DEF_PASSWORD,  // password
-    GETOPT_DEF_CONFIG,  // config
-    GETOPT_DEF_DAEMON,  // daemon
-    GETOPT_DEF_METHOD,  // method
-    GETOPT_DEF_END  // end of long options
-};
-/** Short options
- *
- *  start-character return when lost arguments
- *    c   no_argument
- *    c:  required_argument   eg. -c1, -c 1
- *    c:: optional_argument
- */
-const char *module_short_options = ":s:p:P:";
+/* Ss_Server member methods */
+void Ss_Server::run_forever() {
+    std::cout << "Server running forever ..." << std::endl;
+}
 
 
 /* shadowsocks-server main entry-point */
@@ -26,8 +13,15 @@ int main(int argc, char *argv[]) {
     // check build environment
     Ss_Core::check_version();
 
-    // parse argument configure
-    Ss_Config config = Ss_Config(argc, argv);
+    // instance new Ss_Config object
+    Ss_Config config = Ss_Config();
 
+    // instance shadowsocks-server
+    Ss_Server server = Ss_Server(config);
+
+    // start server
+    server.run_forever();
+
+    // success exit
     return 0;
 }
