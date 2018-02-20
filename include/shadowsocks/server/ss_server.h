@@ -18,7 +18,7 @@ class Ss_Server : Ss_Daemon {
         explicit Ss_Server(Ss_Config &config): Ss_Daemon(config) {}
 
     public:
-        void run_forever() final;
+        void run_forever() final ;
 };
 
 

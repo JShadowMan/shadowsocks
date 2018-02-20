@@ -7,8 +7,9 @@
 
 
 /* daemon service */
-#include <shadowsocks/ss_daemon.h>
-#include <shadowsocks/ss_config.h>
+#include "shadowsocks/ss_core.h"
+#include "shadowsocks/ss_daemon.h"
+#include "shadowsocks/ss_config.h"
 
 
 /* shadowsocks-client service */

@@ -13,7 +13,7 @@ class Ss_Daemon {
         explicit Ss_Daemon(Ss_Config &config): _config(config) {}
 
     public:
-        virtual void run_forever() = 0;
+        virtual void run_forever();
 
     protected:
         Ss_Config _config;
