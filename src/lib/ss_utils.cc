@@ -34,3 +34,20 @@ std::string *Ss_Utils::format(const char *format) {
     *result = *result + ": " + format;
     return result;
 }
+
+
+/* get directory-name from path */
+char* Ss_Utils::dirname(const std::string &path) {
+    auto dir = new std::string(path);
+    auto sep_index = dir->rfind('/');
+
+    auto alloc_size = (sep_index == std::string::npos ? path.length()
+                                                      : sep_index) + 1;
+    auto name = new char[alloc_size];
+    memcpy(name, path.c_str(), alloc_size);
+
+    if (sep_index != std::string::npos) {
+        name[sep_index] = '\0';
+    }
+    return name;
+}

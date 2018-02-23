@@ -1,11 +1,4 @@
-#include <iostream>
 #include "shadowsocks/ss_core.h"
-
-
-/* Ss_Server member methods */
-void Ss_Client::run_forever() {
-    std::cout << "Client running forever ..." << std::endl;
-}
 
 
 /* shadowsocks-client main entry-point */

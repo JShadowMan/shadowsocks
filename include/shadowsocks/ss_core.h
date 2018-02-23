@@ -30,10 +30,6 @@
 #   endif  // SHADOWSOCKS_CLIENT_MODULE
 # endif  // SHADOWSOCKS_SERVER_MODULE
 
-/* other shadowsocks-headers */
-#include "shadowsocks/ss_config.h"
-#include "shadowsocks/ss_utils.h"
-
 
 /* Class Ss_Core */
 class Ss_Core {
@@ -46,6 +42,7 @@ class Ss_Core {
     public:
         constexpr static const char *module_name = MODULE_NAME;
         constexpr static const char *module_version = MODULE_VERSION;
+        constexpr static const char *pid_file = PID_FILE;
 };
 
 

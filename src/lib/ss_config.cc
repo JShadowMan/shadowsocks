@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include "shadowsocks/ss_core.h"
+#include "shadowsocks/ss_utils.h"
 
 /* static methods */
 static inline bool check_daemon_value(const std::string &value);

@@ -24,7 +24,20 @@ endif ()
 set(SHADOWSOCKS_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
 set(SHADOWSOCKS_SOURCES_DIR ${CMAKE_SOURCE_DIR}/src/lib)
 
+# common sources
 aux_source_directory(${SHADOWSOCKS_SOURCES_DIR} SHADOWSOCKS_SOURCES)
+
+# output directory
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+# platform macro
+if (${WIN32})
+    add_definitions(-D__windows__)
+else ()
+    add_definitions(-D__unix__)
+endif ()
 
 # sub target
 add_subdirectory(${CMAKE_SOURCE_DIR}/src/client)

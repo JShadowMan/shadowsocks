@@ -4,6 +4,7 @@
 /* shadowsocks-module information */
 #define MODULE_NAME "shadowsocks-client"
 #define MODULE_VERSION "0.0.1"
+#define PID_FILE "/var/shadowsocks/ss-client.pid"
 
 
 /* daemon service */

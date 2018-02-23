@@ -19,6 +19,8 @@ class Ss_Utils {
         static std::string *format(const char *format,
                                    std::initializer_list<const char *> args);
         static std::string *format(const char *format);
+
+        static char *dirname(const std::string &path);
 };
 
 

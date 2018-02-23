@@ -4,10 +4,10 @@
 /* shadowsocks-module information */
 #define MODULE_NAME "shadowsocks-server"
 #define MODULE_VERSION "0.0.1"
+#define PID_FILE "/var/shadowsocks/ss-server.pid"
 
 
 /* daemon service */
-#include "shadowsocks/ss_core.h"
 #include "shadowsocks/ss_config.h"
 #include "shadowsocks/ss_daemon.h"
 
@@ -18,7 +18,10 @@ class Ss_Server : Ss_Daemon {
         explicit Ss_Server(Ss_Config &config): Ss_Daemon(config) {}
 
     public:
-        void run_forever() final ;
+        void run_forever() final;
+
+    private:
+        Ss_Config _config;
 };
 
 
