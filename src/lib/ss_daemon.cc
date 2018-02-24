@@ -1,11 +1,9 @@
 #include <iostream>
-#include <cstdio>
-#include <cstdlib>
 #include <cstring>
 #include <fstream>
 
 /* shadowsocks headers */
-#include "shadowsocks/ss_daemon.h"
+#include "shadowsocks/ss_core.h"
 #include "shadowsocks/ss_logger.h"
 #include "shadowsocks/ss_utils.h"
 
@@ -25,11 +23,11 @@ static void create_pid_file(const int pid);
 
 /* check environment and startup daemon */
 Ss_Daemon::Ss_Daemon(Ss_Config &config): _config(config) {
-// in linux, using double-fork startup daemon
+/* in linux, using double-fork startup daemon */
 #ifdef __linux__
     auto pid = fork();  // fork #1
     if (pid > 0) {
-        std::cout << "Parent PID: " << getpid() << " exit" << std::endl;
+        Ss_Logger::debug("fork #1 parent exit, pid = ?", getpid());
         std::exit(0);  // parent exit
     }
 
@@ -39,25 +37,29 @@ Ss_Daemon::Ss_Daemon(Ss_Config &config): _config(config) {
 
     pid = fork();  // fork #2
     if (pid > 0) {
-        Ss_Logger::debug("asd");
-        std::cout << "Parent PID: " << getpid() << " exit" << std::endl;
+        Ss_Logger::debug("fork #2 parent exit, pid = ?", getpid());
         std::exit(0);  // parent exit
     }
 
-    std::cout << "PID: " << getpid() << std::endl;
+    Ss_Logger::info("daemon has startup, pid = ?", getpid());
 
+    /* check directory exists, and create it */
     char *dir_name = Ss_Utils::dirname(Ss_Core::pid_file);
-    std::cout << dir_name << std::endl;
-    // create pid file
-    // create_pid_file(getpid());
+    if (!Ss_Utils::dir_exists(dir_name)) {
+        Ss_Logger::debug("directory(?) not exists", dir_name);
+        if (Ss_Utils::create_dir(dir_name)) {
+            Ss_Logger::debug("create directory(?) success", dir_name);
+        }
+    }
+    /* create pid file */
+    create_pid_file(getpid());
 
-    delete[] dir_name;  // don't forget free memory
+    /* don't forget free memory */
+    delete[] dir_name;
 
     std::cout << "stdin: " << fileno(stdin) << std::endl;
     std::cout << "stdout: " << fileno(stdout) << std::endl;
     std::cout << "stderr: " << fileno(stderr) << std::endl;
-
-    sleep(20);
 #endif
 
 
@@ -72,20 +74,15 @@ Ss_Daemon::Ss_Daemon(Ss_Config &config): _config(config) {
 
 /* create pid file */
 static void create_pid_file(const int pid) {
-//    char *pid_file = nullptr;
-//    auto size_of_string = std::strlen(Ss_Core::pid_file) * sizeof(char);
-//    if ((pid_file = (char *)malloc(size_of_string)) == nullptr) {
-//        std::cout << "malloc error" << std::endl;
-//    }
-//    std::memncpy(pid_file, Ss_Core::pid_file, size_of_string);
-//    std::cout << dirname(pid_file) << std::endl;
-//
-//    free(pid_file);
-//    pid_file = nullptr;
-//
-//    auto pid_stream = new std::ofstream(Ss_Core::pid_file, std::ofstream::out);
-//    *pid_stream << pid;
-//    pid_stream->close();
+    char *pid_file = new char[std::strlen(Ss_Core::pid_file) + 1];
+    memcpy(pid_file, Ss_Core::pid_file, std::strlen(Ss_Core::pid_file) + 1);
+
+    auto pid_stream = new std::ofstream(pid_file, std::ofstream::out);
+    *pid_stream << pid;
+
+    /* close stream and free memory */
+    pid_stream->close();
+    delete[] pid_file;
 }
 
 #endif

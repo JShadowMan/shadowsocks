@@ -1,20 +1,6 @@
 #ifndef __SHADOWSOCKS_CORE_INCLUDED__
 #define __SHADOWSOCKS_CORE_INCLUDED__
 
-/* error definitions */
-#define EXIT_SHADOWSOCKS_MODULE_INVALID 0x0001
-#define ERROR_UNKNOWN_MODULE_VERSION "unknown"
-
-#define EXIT_FORMAT_NOT_MATCHED 0x1001
-#define ERROR_FORMAT_NOT_MATCHED "Format string invalid '?'"
-
-#define EXIT_INVALID_OPTION 0x0002
-#define ERROR_INVALID_OPTION "Invalid option '?'"
-
-
-/* other definitions */
-#define FORMAT_PLACEHOLDER_FLAG ('?')
-
 /* other standard headers */
 #include <string>
 #include <initializer_list>
@@ -30,6 +16,12 @@
 #   endif  // SHADOWSOCKS_CLIENT_MODULE
 # endif  // SHADOWSOCKS_SERVER_MODULE
 
+/* error definitions */
+#define EXIT_SHADOWSOCKS_MODULE_INVALID 0xffff
+#define ERROR_UNKNOWN_MODULE_VERSION "unknown"
+
+/* other some definition */
+#define FORMAT_PLACEHOLDER ('?')
 
 /* Class Ss_Core */
 class Ss_Core {
@@ -43,6 +35,7 @@ class Ss_Core {
         constexpr static const char *module_name = MODULE_NAME;
         constexpr static const char *module_version = MODULE_VERSION;
         constexpr static const char *pid_file = PID_FILE;
+        constexpr static const char *time_format = "%d-%m-%Y %I:%M:%S";
 };
 
 

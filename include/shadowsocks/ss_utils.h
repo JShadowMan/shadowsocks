@@ -6,7 +6,6 @@
 #include <string>
 #include <algorithm>
 #include <initializer_list>
-#include "shadowsocks/ss_core.h"
 
 
 /* Class Ss_Utils */
@@ -16,11 +15,10 @@ class Ss_Utils {
         static bool contains(T value, std::initializer_list<T> list);
 
     public:
-        static std::string *format(const char *format,
-                                   std::initializer_list<const char *> args);
-        static std::string *format(const char *format);
-
         static char *dirname(const std::string &path);
+        static bool dir_exists(const std::string &path);
+        static bool create_dir(const std::string &path);
+        static std::string *current_time(const char *format);
 };
 
 
