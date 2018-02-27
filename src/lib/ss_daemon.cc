@@ -7,24 +7,75 @@
 #include "shadowsocks/ss_logger.h"
 #include "shadowsocks/ss_utils.h"
 
-// linux only headers
-#ifdef __linux__
-#   include <unistd.h>
-#   include <dirent.h>
-#   include <libgen.h>
-#   include <sys/stat.h>
-#endif
+/* linux only headers */
+#include <unistd.h>
+#include <dirent.h>
+#include <libgen.h>
+#include <sys/stat.h>
 
-// on linux methods
-#ifdef __linux__
+/* cross-platform methods */
 static void create_pid_file(const int pid);
-#endif
+static std::string *get_pid_from_file(const char *pid_file);
+static void startup_daemon();
 
 
 /* check environment and startup daemon */
 Ss_Daemon::Ss_Daemon(Ss_Config &config): _config(config) {
-/* in linux, using double-fork startup daemon */
-#ifdef __linux__
+    if (!Ss_Utils::file_exists(Ss_Core::pid_file)) {
+        startup_daemon();
+
+        /* check directory exists, and create it */
+        char *dir_name = Ss_Utils::dirname(Ss_Core::pid_file);
+        if (!Ss_Utils::dir_exists(dir_name)) {
+            Ss_Logger::debug("directory(?) not exists", dir_name);
+            if (Ss_Utils::create_dir(dir_name)) {
+                Ss_Logger::debug("create directory(?) success", dir_name);
+            }
+        }
+        /* create pid file */
+        create_pid_file(getpid());
+
+        /* don't forget free memory */
+        delete[] dir_name;
+    } else {
+        auto pid = get_pid_from_file(Ss_Core::pid_file);
+        Ss_Logger::info("pid file exists, pid = ?", *pid);
+    }
+
+//    std::cout << "stdin: " << fileno(stdin) << std::endl;
+//    std::cout << "stdout: " << fileno(stdout) << std::endl;
+//    std::cout << "stderr: " << fileno(stderr) << std::endl;
+}
+
+/* create pid file */
+static void create_pid_file(const int pid) {
+    auto pid_file = new char[std::strlen(Ss_Core::pid_file) + 1];
+    memcpy(pid_file, Ss_Core::pid_file, std::strlen(Ss_Core::pid_file) + 1);
+
+    auto pid_stream = new std::ofstream(pid_file, std::ofstream::out);
+    *pid_stream << pid;
+
+    /* close stream and free memory */
+    pid_stream->close();
+    delete[] pid_file;
+}
+
+/* get pid from pid_file */
+static std::string *get_pid_from_file(const char *pid_file) {
+    auto pid = new std::string();
+
+    auto pid_stream = new std::ifstream(pid_file, std::ifstream::in);
+    if (pid_stream->good()) {
+        *pid_stream >> *pid;
+        pid_stream->close();
+    }
+
+    return pid;
+}
+
+/* startup daemon */
+static void startup_daemon() {
+    /* in linux, using double-fork startup daemon */
     auto pid = fork();  // fork #1
     if (pid > 0) {
         Ss_Logger::debug("fork #1 parent exit, pid = ?", getpid());
@@ -42,47 +93,4 @@ Ss_Daemon::Ss_Daemon(Ss_Config &config): _config(config) {
     }
 
     Ss_Logger::info("daemon has startup, pid = ?", getpid());
-
-    /* check directory exists, and create it */
-    char *dir_name = Ss_Utils::dirname(Ss_Core::pid_file);
-    if (!Ss_Utils::dir_exists(dir_name)) {
-        Ss_Logger::debug("directory(?) not exists", dir_name);
-        if (Ss_Utils::create_dir(dir_name)) {
-            Ss_Logger::debug("create directory(?) success", dir_name);
-        }
-    }
-    /* create pid file */
-    create_pid_file(getpid());
-
-    /* don't forget free memory */
-    delete[] dir_name;
-
-    std::cout << "stdin: " << fileno(stdin) << std::endl;
-    std::cout << "stdout: " << fileno(stdout) << std::endl;
-    std::cout << "stderr: " << fileno(stderr) << std::endl;
-#endif
-
-
-// only services startup daemon, just warning
-#ifdef __windows__
-    Ss_Logger::debug("windows not support daemon service");
-#endif
 }
-
-/* methods definitions */
-#ifdef __linux__
-
-/* create pid file */
-static void create_pid_file(const int pid) {
-    char *pid_file = new char[std::strlen(Ss_Core::pid_file) + 1];
-    memcpy(pid_file, Ss_Core::pid_file, std::strlen(Ss_Core::pid_file) + 1);
-
-    auto pid_stream = new std::ofstream(pid_file, std::ofstream::out);
-    *pid_stream << pid;
-
-    /* close stream and free memory */
-    pid_stream->close();
-    delete[] pid_file;
-}
-
-#endif

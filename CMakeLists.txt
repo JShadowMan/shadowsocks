@@ -32,13 +32,6 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-# platform macro
-if (${WIN32})
-    add_definitions(-D__windows__)
-else ()
-    add_definitions(-D__unix__)
-endif ()
-
 # sub target
 add_subdirectory(${CMAKE_SOURCE_DIR}/src/client)
 add_subdirectory(${CMAKE_SOURCE_DIR}/src/server)

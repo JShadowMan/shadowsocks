@@ -3,13 +3,10 @@
 #include <chrono>
 
 /* linux-only headers */
-#ifdef __linux__
-#   include <sys/types.h>
-#   include <sys/stat.h>
-#   include <dirent.h>
-#else
-#   include <windows.h>
-#endif
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <dirent.h>
 
 /* shadowsocks other headers */
 #include "shadowsocks/ss_core.h"
@@ -37,30 +34,23 @@ char* Ss_Utils::dirname(const std::string &path) {
 
 /* check directory exists */
 bool Ss_Utils::dir_exists(const std::string &path) {
-#ifdef __linux__
     DIR *dir = opendir(path.c_str());
     if (dir) {
         closedir(dir);
         return true;
     }
     return false;
-#else
-    DWORD attr = GetFileAttributes(path.c_str());
-    return (attr != INVALID_FILE_ATTRIBUTES)
-           && (attr & FILE_ATTRIBUTE_DIRECTORY);
-#endif
+}
+
+/* check file exists */
+bool Ss_Utils::file_exists(const std::string &path) {
+    return access(path.c_str(), F_OK) != -1;
 }
 
 /* create directory */
 bool Ss_Utils::create_dir(const std::string &path) {
-#ifdef __linux__
     auto result = mkdir(path.c_str(), 0755);
     return result == 0;
-#else
-    /* If the function succeeds, the return value is nonzero. */
-    BOOL attr = CreateDirectory(path.c_str(), (LPSECURITY_ATTRIBUTES)nullptr);
-    return attr != 0;
-#endif
 }
 
 /* return current time format by first parameter */

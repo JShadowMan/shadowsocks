@@ -9,6 +9,8 @@
 #define LIGHT_YELLOW    "\033[1;33m"
 #define LIGHT_RED       "\033[1;31m"
 #define CLEAN_COLOR     "\033[0m"
+#define MESSAGE_SEP     "\u279c"
+
 
 /* static member initializing */
 Ss_Logger Ss_Logger::_logger = Ss_Logger();
@@ -35,7 +37,8 @@ void Ss_Logger::log(LoggerLevel level, std::string &message) {
     }
 
     /* logger header */
-    buffer << *Ss_Utils::current_time(Ss_Core::time_format) << "\t\u279c ";
+    buffer << *Ss_Utils::current_time(Ss_Core::time_format)
+           << "\t" MESSAGE_SEP " ";
 
     /* message output */
     buffer << message;

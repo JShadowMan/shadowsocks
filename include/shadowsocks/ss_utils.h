@@ -17,6 +17,7 @@ class Ss_Utils {
     public:
         static char *dirname(const std::string &path);
         static bool dir_exists(const std::string &path);
+        static bool file_exists(const std::string &path);
         static bool create_dir(const std::string &path);
         static std::string *current_time(const char *format);
 };
