@@ -27,9 +27,11 @@ Ss_Daemon::Ss_Daemon(Ss_Config &config): _config(config) {
         /* check directory exists, and create it */
         char *dir_name = Ss_Utils::dirname(Ss_Core::pid_file);
         if (!Ss_Utils::dir_exists(dir_name)) {
-            Ss_Logger::debug("directory(?) not exists", dir_name);
+            auto dir = std::string(dir_name);
+
+            Ss_Logger::debug("directory(\"?\") not exists", dir);
             if (Ss_Utils::create_dir(dir_name)) {
-                Ss_Logger::debug("create directory(?) success", dir_name);
+                Ss_Logger::debug("create directory(\"?\") success", dir);
             }
         }
         /* create pid file */
@@ -39,7 +41,7 @@ Ss_Daemon::Ss_Daemon(Ss_Config &config): _config(config) {
         delete[] dir_name;
     } else {
         auto pid = get_pid_from_file(Ss_Core::pid_file);
-        Ss_Logger::info("pid file exists, pid = ?", *pid);
+        Ss_Logger::info("detect daemon running, pid = ?", *pid);
     }
 
 //    std::cout << "stdin: " << fileno(stdin) << std::endl;
@@ -57,6 +59,8 @@ static void create_pid_file(const int pid) {
 
     /* close stream and free memory */
     pid_stream->close();
+    Ss_Logger::debug("pid file created, path = ?", std::string(pid_file));
+
     delete[] pid_file;
 }
 

@@ -49,6 +49,8 @@ class Ss_Logger {
     private:
         template<typename T, typename ...Args>
         static std::string *format_parse(Format format, T val, Args... args);
+        template<typename T, typename ...Args>
+        static std::string *format_parse(Format format, T *val, Args... args);
         static std::string *format_parse(Format format);
 
     private:
@@ -102,6 +104,12 @@ std::string *Ss_Logger::format_parse(Format format, T val, Args... args) {
 
     auto result = new std::string(buffer.str());
     return result;
+}
+
+/* format message with current param is pointer */
+template<typename T, typename ...Args>
+std::string* Ss_Logger::format_parse(Format format, T *val, Args... args) {
+    return Ss_Logger::format_parse(format, *val, args...);
 }
 
 
