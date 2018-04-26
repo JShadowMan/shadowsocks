@@ -1,42 +1,29 @@
 #ifndef __SHADOWSOCKS_CORE_INCLUDED__
 #define __SHADOWSOCKS_CORE_INCLUDED__
+#pragma once
 
-/* other standard headers */
-#include <string>
-#include <initializer_list>
+// check and definition shadowsocks version
+#include <fstream>
 
-/* include server/client header */
-# ifdef SHADOWSOCKS_SERVER_MODULE
-#   include "shadowsocks/server/ss_server.h"
-# else
-#   ifdef SHADOWSOCKS_CLIENT_MODULE
-#     include "shadowsocks/client/ss_client.h"
-#   else
-#     define MODULE_VERSION ERROR_UNKNOWN_MODULE_VERSION
-#   endif  // SHADOWSOCKS_CLIENT_MODULE
-# endif  // SHADOWSOCKS_SERVER_MODULE
+#ifndef SHADOWSOCKS_VERSION
+#   define SHADOWSOCKS_VERSION "UNKNOWN"
+#endif
 
-/* error definitions */
-#define EXIT_SHADOWSOCKS_MODULE_INVALID 0xffff
-#define ERROR_UNKNOWN_MODULE_VERSION "unknown"
+// check and definition shadowsocks module
+#ifndef SHADOWSOCKS_MODULE
+#   define SHADOWSOCKS_MODULE "UNKNOWN"
+#endif
 
-/* other some definition */
-#define FORMAT_PLACEHOLDER ('?')
+// MIT License link
+#define SHADOWSOCKS_LICENSE_LINK \
+    "https://raw.githubusercontent.com/JShadowMan/shadowsocks/master/LICENSE"
 
-/* Class Ss_Core */
+
+/* `Ss_Core` class */
 class Ss_Core {
     public:
-        static void check_version();
-
-    public:
-        static void trigger_error(int error_code, std::string &error);
-
-    public:
-        constexpr static const char *module_name = MODULE_NAME;
-        constexpr static const char *module_version = MODULE_VERSION;
-        constexpr static const char *pid_file = PID_FILE;
-        constexpr static const char *time_format = "%d-%m-%Y %I:%M:%S";
+        static std::ostream &printShadowSocksHeader(std::ostream &s);
 };
 
 
-#endif  // __SHADOWSOCKS_CORE_INCLUDED__
+#endif // __SHADOWSOCKS_CORE_INCLUDED__

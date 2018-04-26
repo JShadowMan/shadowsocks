@@ -5,11 +5,6 @@ cmake_minimum_required(VERSION 3.8)
 set(SHADOWSOCKS_NAME shadowsocks)
 set(SHADOWSOCKS_VERSION 0.0.1)
 
-# settup build type
-if (NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release FORCE)
-endif ()
-
 # cxx standard
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -20,11 +15,14 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 endif ()
 
+# add macro to cxx
+add_definitions(-DSHADOWSOCKS_VERSION="${SHADOWSOCKS_VERSION}")
+
 # include and sources dir
 set(SHADOWSOCKS_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
 set(SHADOWSOCKS_SOURCES_DIR ${CMAKE_SOURCE_DIR}/src/lib)
 
-# common sources
+# sources for libraries
 aux_source_directory(${SHADOWSOCKS_SOURCES_DIR} SHADOWSOCKS_SOURCES)
 
 # output directory

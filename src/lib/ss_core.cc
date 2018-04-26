@@ -1,21 +1,13 @@
-#include <iostream>
-#include <cstdlib>
-#include <cstring>
 #include "shadowsocks/ss_core.h"
 
 
-/* check version of shadowsocks-server/client */
-void Ss_Core::check_version() {
-    if (std::strcmp(module_version, ERROR_UNKNOWN_MODULE_VERSION) == 0) {
-        /**
-         * \todo logger
-         */
-        std::exit(EXIT_SHADOWSOCKS_MODULE_INVALID);
-    }
-}
+// print program information and license to screen
+std::ostream& Ss_Core::printShadowSocksHeader(std::ostream &s) {
+    s << "ShadowSocks-" << SHADOWSOCKS_MODULE << " "
+      << "Ver: " << SHADOWSOCKS_VERSION << std::endl;
+    s << "Copyright (C) 2018 Jayson Wang <jayson@shellboot.com>" << std::endl;
+    s << "MIT License: " << "<" SHADOWSOCKS_LICENSE_LINK ">" << std::endl;
+    s << std::endl;
 
-/* trigger error handler and logging */
-void Ss_Core::trigger_error(int error_code, std::string &error) {
-    std::cerr << error << std::endl;
-    std::exit(error_code);
+    return s;
 }

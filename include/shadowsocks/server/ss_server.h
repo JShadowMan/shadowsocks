@@ -1,28 +1,24 @@
 #ifndef __SHADOWSOCKS_SERVER_INCLUDED__
 #define __SHADOWSOCKS_SERVER_INCLUDED__
-
-/* shadowsocks-module information */
-#define MODULE_NAME "shadowsocks-server"
-#define MODULE_VERSION "0.0.1"
-#define PID_FILE "/var/shadowsocks/ss-server.pid"
+#pragma once
 
 
-/* daemon service */
-#include "shadowsocks/ss_config.h"
-#include "shadowsocks/ss_daemon.h"
+/* other shadowsocks headers */
+#include "shadowsocks/ss_network.h"
 
 
-/* shadowsocks-server service */
-class Ss_Server : Ss_Daemon {
+/* `Ss_Server` class */
+class Ss_Server {
     public:
-        explicit Ss_Server(Ss_Config &config): Ss_Daemon(config) {}
+        Ss_Server();
+        ~Ss_Server();
 
     public:
-        void run_forever() final;
+        bool createDaemon();
 
     private:
-        Ss_Config _config;
+        Ss_Network *_network;
 };
 
 
-#endif  // __SHADOWSOCKS_SERVER_INCLUDED__
+#endif // __SHADOWSOCKS_SERVER_INCLUDED__
