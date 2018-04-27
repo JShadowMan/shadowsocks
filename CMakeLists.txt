@@ -15,6 +15,17 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 endif ()
 
+# platform setup
+message(STATUS "Current platform: ${CMAKE_SYSTEM_NAME}")
+IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
+    add_definitions(-D__linux__)
+ELSEIF (CMAKE_SYSTEM_NAME MATCHES "Windows")
+    add_definitions(-D__windows__)
+    link_libraries(ws2_32.lib)
+ELSE ()
+    message(ERROR "other platform: ${CMAKE_SYSTEM_NAME}")
+ENDIF (CMAKE_SYSTEM_NAME MATCHES "Linux")
+
 # add macro to cxx
 add_definitions(-DSHADOWSOCKS_VERSION="${SHADOWSOCKS_VERSION}")
 

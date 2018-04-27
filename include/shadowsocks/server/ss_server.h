@@ -11,13 +11,14 @@
 class Ss_Server {
     public:
         Ss_Server();
-        ~Ss_Server();
+        virtual ~Ss_Server();
 
     public:
         bool createDaemon();
 
     private:
-        Ss_Network *_network;
+        Ss_Network *_tcp_server;
+        Ss_Network *_udp_server;
 };
 
 
