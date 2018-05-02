@@ -26,6 +26,7 @@ ELSE ()
     message(ERROR "other platform: ${CMAKE_SYSTEM_NAME}")
 ENDIF (CMAKE_SYSTEM_NAME MATCHES "Linux")
 
+
 # add macro to cxx
 add_definitions(-DSHADOWSOCKS_VERSION="${SHADOWSOCKS_VERSION}")
 

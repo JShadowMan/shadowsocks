@@ -4,7 +4,7 @@
 
 // Ss_Server constructor
 Ss_Server::Ss_Server()
-    : _tcp_server(Ss_Network::generateTcpMetwork()),
+    : _tcp_server(Ss_Network::generateTcpNetwork()),
       _udp_server(Ss_Network::generateUdpNetwork()) {
 }
 

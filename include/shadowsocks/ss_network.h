@@ -20,11 +20,13 @@
 #   define SOCKET SOCKET
 #endif
 
-
 // socket error flag
 #ifndef SOCKET_ERROR
 #define SOCKET_ERROR (-1)
 #endif
+
+// success flag
+#define OPERATOR_SUCCESS 0
 
 
 /* `Ss_Network` class */
@@ -46,7 +48,7 @@ class Ss_Network {
         ~Ss_Network();
 
     public:
-        static Ss_Network *generateTcpMetwork();
+        static Ss_Network *generateTcpNetwork();
         static Ss_Network *generateUdpNetwork();
 
     public:
@@ -55,6 +57,13 @@ class Ss_Network {
     private:
         bool createSocket();
         bool bindSocket(const char *host, int port);
+
+        bool tcpSetSocketOpts();
+        bool udpSetSocketOpts();
+        bool toggleNonBlocking();
+
+        bool tcpStartListening();
+        bool udpStartListening();
 
     private:
         static sockaddr_storage socketGetAddr(const char *host, int port);
@@ -66,6 +75,11 @@ class Ss_Network {
         NetworkFamily _family;
         NetworkType _type;
         NetworkSocket _socket;
+
+        int _listenSize = 8;
+
+    private:
+        static int _availableNetworkCount;
 
 #ifdef __windows__
     private:

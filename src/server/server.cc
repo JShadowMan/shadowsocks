@@ -12,5 +12,8 @@ int main(int argc, char *argv[]) {
     Ss_Server server;
     server.createDaemon();
 
+    int number;
+    std::cin >> number;
+
     return 0;
 }
