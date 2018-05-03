@@ -23,6 +23,9 @@
 class Ss_Core {
     public:
         static std::ostream &printShadowSocksHeader(std::ostream &s);
+        static std::string &&getLastError();
+        static void printLastError(std::string &additionalMessage);
+        static void printLastError(const char *additionalMessage);
 };
 
 

@@ -1,36 +1,38 @@
 #include <iostream>
 #include <cstdlib>
 #include <cstring>
-#include <errno.h>
+#include <sstream>
+#include "shadowsocks/ss_core.h"
 #include "shadowsocks/ss_network.h"
 
 
 // header include
 #ifdef __linux__
-#   include <sys/types.h>
-#   include <sys/socket.h>
-#   include <netinet/in.h>
-#   include <arpa/inet.h>
-#   include <netdb.h>
-#   include <unistd.h>
-#   include <fcntl.h>
-#elif __windows__
-#   include <ws2tcpip.h>
-#endif
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+#define SOCKET_CLOSE(_S)        close((_S))
 
 
-// utils for macro
-#ifdef __linux__
-#   define SOCKET_CLOSE(_S) close((_S))
 #elif __windows__
-#   define SOCKET_CLOSE(_S) closesocket((_S))
-#endif
+#include <ws2tcpip.h>
+
+#define SOCKET_CLOSE(_S)        closesocket((_S))
+
+
+#endif /* header included */
 
 
 // static members initializing
 #ifdef __windows__
 // on windows
 bool Ss_Network::_socketSetup = false;
+
 
 #endif
 
@@ -41,7 +43,7 @@ int Ss_Network::_availableNetworkCount = 0;
 
 // Ss_Network constructor
 Ss_Network::Ss_Network(NetworkFamily family, NetworkType type)
-    : _family(family), _type(type) {
+    : _family(family), _type(type), _selector(new Ss_Selector()) {
     _availableNetworkCount++;
 }
 
@@ -51,6 +53,7 @@ Ss_Network::~Ss_Network() {
     std::cout << "close socket success, socket = " << _socket
               << std::endl;
 
+    delete _selector;
     _availableNetworkCount--;
 
 #ifdef __windows__
@@ -71,21 +74,27 @@ Ss_Network *Ss_Network::generateUdpNetwork() {
 // create listen socket
 bool Ss_Network::listen(const char *host, int port) {
     if (!createSocket()) {
-        std::cerr << "create socket error" << std::endl;
+        Ss_Core::printLastError("create socket error");
         std::exit(1);
     }
 
     if (!bindSocket(host, port)) {
-        std::cerr << "bind socket error" << std::endl;
+        Ss_Core::printLastError("bind socket error");
         std::exit(1);
     }
 
     bool listenResult = _type == NetworkType::NT_TCP ? tcpStartListening()
         : udpStartListening();
     if (!listenResult) {
-        std::cerr << "listening socket " << _socket <<  "error" << std::endl;
+        std::stringstream ss;
+        ss << "socket: " << _socket;
+        Ss_Core::printLastError(ss.str().c_str());
         std::exit(1);
     }
+
+    _selector->registerSocket(_socket, {
+        Ss_Selector::SelectorEvent::SE_READABLE
+    });
 
     return true;
 }
@@ -113,16 +122,15 @@ bool Ss_Network::bindSocket(const char *host, int port) {
     sockaddr_storage socketAddr = socketGetAddr(host, port);
     auto bindAddr = (sockaddr*) &socketAddr;
 
-    bool result = (_type == NetworkType::NT_TCP) ? tcpSetSocketOpts()
-                  : udpSetSocketOpts();
+    bool result = (_type == NetworkType::NT_TCP)
+                  ? tcpSetSocketOpts() : udpSetSocketOpts();
     if (!result) {
-        std::cerr << "cannot set socket options" << std::endl;
+        Ss_Core::printLastError("cannot set socket options");
         std::exit(1);
     }
 
     if (!toggleNonBlocking()) {
-        std::cerr << errno << ": " << strerror(errno) << std::endl;
-        std::cerr << "cannot set socket blocking state" << std::endl;
+        Ss_Core::printLastError("cannot set socket blocking state");
         std::exit(1);
     }
 
@@ -211,8 +219,10 @@ sockaddr_storage Ss_Network::socketGetAddr(const char *host, int port) {
         std::memcpy(&socketAddr.s6.sin6_addr, he->h_addr_list[0],
                     static_cast<size_t>(he->h_length));
     } else {
-        std::cerr << "undefined socket addr type for " << he->h_addrtype
-                  << std::endl;
+        std::stringstream ss;
+        ss << "undefined socket addr type for " << he->h_addrtype;
+        Ss_Core::printLastError(ss.str().c_str());
+        std::exit(1);
     }
 
     socketAddr.s4.sin_port = htons(static_cast<unsigned short>(port));
@@ -227,7 +237,7 @@ void Ss_Network::winSocketSetup() {
     if (!_socketSetup) {
         WSADATA winSockEnv = {0};
         if (WSAStartup(MAKEWORD(2, 2), &winSockEnv) != OPERATOR_SUCCESS) {
-            std::cerr << "socket setup failure on windows" << std::endl;
+            Ss_Core::printLastError("socket setup failure on windows");
             std::exit(1);
         }
         _socketSetup = true;
@@ -239,7 +249,8 @@ void Ss_Network::winSocketShutdown() {
     // check socket startup in windows and no Network available
     if (_socketSetup && _availableNetworkCount == 0) {
         if (WSACleanup() != OPERATOR_SUCCESS) {
-            std::cerr << "socket shutdown failure on windows" << std::endl;
+            Ss_Core::printLastError("socket shutdown failure on windows");
+            std::exit(1);
         }
 
         _socketSetup = false;
@@ -247,4 +258,5 @@ void Ss_Network::winSocketShutdown() {
     }
 }
 
-#endif
+
+#endif /* methods for windows platform */

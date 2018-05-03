@@ -1,32 +1,11 @@
 #ifndef __SHADOWSOCKS_NETWORK_INCLUDED__
 #define __SHADOWSOCKS_NETWORK_INCLUDED__
-
-
-/* socket headers */
-#ifdef __linux__
-#   include <sys/types.h>
-#   include <sys/socket.h>
-#elif __windows__
-#   include <Windows.h>
-#   include <WinSock2.h>
-#endif
 #pragma once
 
 
-// socket type definition
-#ifdef __linux__
-#   define SOCKET int
-#elif __windows__
-#   define SOCKET SOCKET
-#endif
-
-// socket error flag
-#ifndef SOCKET_ERROR
-#define SOCKET_ERROR (-1)
-#endif
-
-// success flag
-#define OPERATOR_SUCCESS 0
+// other shadowsocks headers
+#include "shadowsocks/ss_types.h"
+#include "shadowsocks/ss_selector.h"
 
 
 /* `Ss_Network` class */
@@ -75,6 +54,7 @@ class Ss_Network {
         NetworkFamily _family;
         NetworkType _type;
         NetworkSocket _socket;
+        Ss_Selector *_selector;
 
         int _listenSize = 8;
 
@@ -88,7 +68,6 @@ class Ss_Network {
         static bool _socketSetup;
 #endif
 };
-
 
 
 #endif // __SHADOWSOCKS_NETWORK_INCLUDED__
