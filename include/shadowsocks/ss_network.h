@@ -32,6 +32,10 @@ class Ss_Network {
 
     public:
         bool listen(const char *host, int port);
+        void select();
+
+    SELECTOR_CALLBACK:
+        void selectorCallback(SOCKET s, Ss_Selector::SelectorEvent event);
 
     private:
         bool createSocket();
@@ -43,6 +47,8 @@ class Ss_Network {
 
         bool tcpStartListening();
         bool udpStartListening();
+
+        void acceptNewSocket();
 
     private:
         static sockaddr_storage socketGetAddr(const char *host, int port);

@@ -20,7 +20,7 @@
 
 
 #elif __windows__
-#include <ws2tcpip.h>
+#include <Ws2tcpip.h>
 
 #define SOCKET_CLOSE(_S)        closesocket((_S))
 
@@ -43,8 +43,14 @@ int Ss_Network::_availableNetworkCount = 0;
 
 // Ss_Network constructor
 Ss_Network::Ss_Network(NetworkFamily family, NetworkType type)
-    : _family(family), _type(type), _selector(new Ss_Selector()) {
+    : _family(family), _type(type), _selector(nullptr) {
     _availableNetworkCount++;
+
+    Ss_Selector::SelectorCallback cb = std::bind(
+        &Ss_Network::selectorCallback, this,
+        std::placeholders::_1, std::placeholders::_2
+    );
+    _selector = new Ss_Selector(cb);
 }
 
 // destructor: close network
@@ -97,6 +103,23 @@ bool Ss_Network::listen(const char *host, int port) {
     });
 
     return true;
+}
+
+// selector callback
+void Ss_Network::selectorCallback(SOCKET s, Ss_Selector::SelectorEvent event) {
+    if (s == _socket) {
+        acceptNewSocket();
+    }
+
+    std::cout << "Callback: " << s << " " << static_cast<int>(event)
+              << std::endl;
+}
+
+// start selector
+void Ss_Network::select() {
+    while (true) {
+        _selector->select();
+    }
 }
 
 // create socket and setup
@@ -193,6 +216,29 @@ bool Ss_Network::udpStartListening() {
     std::cout << "udp socket " << _socket << " start listening" << std::endl;
 
     return true;
+}
+
+// accept socket from listening
+void Ss_Network::acceptNewSocket() {
+    sockaddr_storage ss = {0};
+#ifdef __linux__
+    socklen_t ssLength = sizeof(ss);
+#elif __windows__
+    int ssLength = sizeof(ss);
+#endif
+
+    SOCKET remote = ::accept(_socket, (sockaddr*) &ss, &ssLength);
+
+    if (static_cast<int>(remote) == -1) {
+        Ss_Core::printLastError("accept new connection error");
+        std::exit(1);
+    }
+
+    std::cout << "remote addr: "
+              << inet_ntoa(((sockaddr_in*) &ss)->sin_addr)
+              << std::endl;
+
+    SOCKET_CLOSE(remote);
 }
 
 // create `sockaddr_storage` by host and port

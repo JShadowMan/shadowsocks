@@ -14,7 +14,8 @@ class Ss_Server {
         virtual ~Ss_Server();
 
     public:
-        bool createDaemon();
+        bool startDaemon();
+        bool startListening();
 
     private:
         Ss_Network *_tcp_server;

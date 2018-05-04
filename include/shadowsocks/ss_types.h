@@ -7,6 +7,8 @@
 #ifdef __linux__
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <poll.h>
+#include <sys/epoll.h>
 
 #define SOCKET          int
 
@@ -30,6 +32,10 @@
 
 // success flag
 #define OPERATOR_SUCCESS 0
+
+
+// callback flag
+#define SELECTOR_CALLBACK        public
 
 
 #endif // __SHADOWSOCKS_TYPES_INCLUDED__
