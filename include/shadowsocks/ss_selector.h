@@ -19,8 +19,8 @@
 class Ss_Selector {
     public:
         enum class SelectorEvent: int8_t {
-            SE_READABLE = 1,
-            SE_WRITABLE = 2
+            SE_READABLE = SELECTOR_EVENT_IN,
+            SE_WRITABLE = SELECTOR_EVENT_OUT
         };
 
     public:
@@ -41,19 +41,7 @@ class Ss_Selector {
 
     private:
         std::function<void(SOCKET, SelectorEvent)> _callback;
-
-#ifdef __linux__
-    private:
-        std::map<SOCKET, pollfd> _sockets;
-
-
-#elif __windows__
-    private:
-        std::list<SOCKET> _readable;
-        std::list<SOCKET> _writable;
-
-
-#endif
+        std::map<SELECTOR_KEY, SELECTOR_VALUE> _sockets;
 };
 
 

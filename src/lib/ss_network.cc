@@ -143,7 +143,7 @@ bool Ss_Network::createSocket() {
 // bind socket fd to `sockaddr`
 bool Ss_Network::bindSocket(const char *host, int port) {
     sockaddr_storage socketAddr = socketGetAddr(host, port);
-    auto bindAddr = (sockaddr*) &socketAddr;
+    auto bindAddr = (struct sockaddr*) &socketAddr;
 
     bool result = (_type == NetworkType::NT_TCP)
                   ? tcpSetSocketOpts() : udpSetSocketOpts();
@@ -227,15 +227,14 @@ void Ss_Network::acceptNewSocket() {
     int ssLength = sizeof(ss);
 #endif
 
-    SOCKET remote = ::accept(_socket, (sockaddr*) &ss, &ssLength);
-
-    if (static_cast<int>(remote) == -1) {
+    SOCKET remote = ::accept(_socket, (struct sockaddr*) &ss, &ssLength);
+    if (static_cast<int>(remote) == SOCKET_ERROR) {
         Ss_Core::printLastError("accept new connection error");
         std::exit(1);
     }
 
     std::cout << "remote addr: "
-              << inet_ntoa(((sockaddr_in*) &ss)->sin_addr)
+              << inet_ntoa(((struct sockaddr_in*) &ss)->sin_addr)
               << std::endl;
 
     SOCKET_CLOSE(remote);
