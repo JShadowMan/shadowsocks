@@ -6,7 +6,7 @@
 
 
 // Ss_Selector constructor
-Ss_Selector::Ss_Selector(SelectorCallback &cb)
+Ss_Selector::Ss_Selector(SelectorCallback &&cb)
     : _callback(cb) {
 }
 
@@ -57,6 +57,8 @@ void Ss_Selector::select() {
             }
         }
     }
+
+    delete []fds;
 }
 
 

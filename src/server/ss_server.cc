@@ -19,8 +19,7 @@ Ss_Server::Ss_Server()
 
 // destructor of Ss_Server
 Ss_Server::~Ss_Server() {
-    delete _tcp_server;
-    delete _udp_server;
+    std::cout << "shadowsocks server instance destructor" << std::endl;
 }
 
 // create daemon and start listening
@@ -39,7 +38,15 @@ bool Ss_Server::startListening() {
     _tcp_server->listen("0.0.0.0", 9980);
     _udp_server->listen("0.0.0.0", 9980);
 
-    _tcp_server->select();
-
     return true;
+}
+
+// start server(select/poll)
+void Ss_Server::startServer() {
+    Ss_Network::startSelect();
+}
+
+// stop select/poll and exit daemon
+void Ss_Server::stopServer() {
+    Ss_Network::stopSelect();
 }

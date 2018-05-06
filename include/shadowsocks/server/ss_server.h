@@ -3,7 +3,11 @@
 #pragma once
 
 
-/* other shadowsocks headers */
+// standard libraries
+#include <memory>
+
+
+// other shadowsocks headers
 #include "shadowsocks/ss_network.h"
 
 
@@ -16,10 +20,12 @@ class Ss_Server {
     public:
         bool startDaemon();
         bool startListening();
+        void startServer();
+        void stopServer();
 
     private:
-        Ss_Network *_tcp_server;
-        Ss_Network *_udp_server;
+        std::shared_ptr<Ss_Network> _tcp_server;
+        std::shared_ptr<Ss_Network> _udp_server;
 };
 
 

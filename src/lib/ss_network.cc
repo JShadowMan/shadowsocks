@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <sstream>
+#include <algorithm>
 #include "shadowsocks/ss_core.h"
 #include "shadowsocks/ss_network.h"
 
@@ -28,43 +29,30 @@
 #endif /* header included */
 
 
-// static members initializing
-#ifdef __windows__
-// on windows
-bool Ss_Network::_socketSetup = false;
-
-
-#endif
-
-
 // common static members initializing
+bool Ss_Network::_selectState = false;
 int Ss_Network::_availableNetworkCount = 0;
+std::shared_ptr<Ss_Selector> Ss_Network::_selector(nullptr);
+std::list<SOCKET> Ss_Network::_serverSockets{};
+bool Ss_Network::_socketSetup = false;
 
 
 // Ss_Network constructor
 Ss_Network::Ss_Network(NetworkFamily family, NetworkType type)
-    : _family(family), _type(type), _selector(nullptr) {
+    : _family(family), _type(type) {
     _availableNetworkCount++;
-
-    Ss_Selector::SelectorCallback cb = std::bind(
-        &Ss_Network::selectorCallback, this,
-        std::placeholders::_1, std::placeholders::_2
-    );
-    _selector = new Ss_Selector(cb);
 }
 
 // destructor: close network
 Ss_Network::~Ss_Network() {
     SOCKET_CLOSE(_socket);
+
+    _availableNetworkCount--;
+    socketEnvironmentClean();
+
     std::cout << "close socket success, socket = " << _socket
               << std::endl;
 
-    delete _selector;
-    _availableNetworkCount--;
-
-#ifdef __windows__
-    winSocketShutdown();
-#endif
 }
 
 // tcp network factory
@@ -98,6 +86,8 @@ bool Ss_Network::listen(const char *host, int port) {
         std::exit(1);
     }
 
+    // start unix socket?
+    _serverSockets.push_back(_socket);
     _selector->registerSocket(_socket, {
         Ss_Selector::SelectorEvent::SE_READABLE
     });
@@ -107,34 +97,38 @@ bool Ss_Network::listen(const char *host, int port) {
 
 // selector callback
 void Ss_Network::selectorCallback(SOCKET s, Ss_Selector::SelectorEvent event) {
-    if (s == _socket) {
-        acceptNewSocket();
+    auto it = std::find(_serverSockets.begin(), _serverSockets.end(), s);
+    if (it != _serverSockets.end()) {
+        acceptNewSocket(s);
     }
 
     std::cout << "Callback: " << s << " " << static_cast<int>(event)
               << std::endl;
 }
 
-// start selector
-void Ss_Network::select() {
-    while (true) {
+// start select
+void Ss_Network::startSelect() {
+    do {
+        _selectState = true;
         _selector->select();
-    }
+    } while (_selectState);
+}
+
+// stop select
+void Ss_Network::stopSelect() {
+    _selectState = false;
 }
 
 // create socket and setup
 bool Ss_Network::createSocket() {
-#ifdef __windows__
-    // socket initializing on windows platform
-    winSocketSetup();
-#endif
-
+    socketEnvironmentInit();
     _socket = socket(static_cast<int>(_family), static_cast<int>(_type), 0);
     if (static_cast<int>(_socket) < 0) {
         return false;
     }
 
-    std::cout << "create socket success, socket = " << _socket
+    std::cout << "create " << (_type == NetworkType::NT_TCP ? "tcp" : "udp")
+              << " socket success, socket = " << _socket
               << std::endl;
 
     return true;
@@ -219,7 +213,7 @@ bool Ss_Network::udpStartListening() {
 }
 
 // accept socket from listening
-void Ss_Network::acceptNewSocket() {
+void Ss_Network::acceptNewSocket(SOCKET s) {
     sockaddr_storage ss = {0};
 #ifdef __linux__
     socklen_t ssLength = sizeof(ss);
@@ -227,7 +221,7 @@ void Ss_Network::acceptNewSocket() {
     int ssLength = sizeof(ss);
 #endif
 
-    SOCKET remote = ::accept(_socket, (struct sockaddr*) &ss, &ssLength);
+    SOCKET remote = ::accept(s, (struct sockaddr*) &ss, &ssLength);
     if (static_cast<int>(remote) == SOCKET_ERROR) {
         Ss_Core::printLastError("accept new connection error");
         std::exit(1);
@@ -238,6 +232,52 @@ void Ss_Network::acceptNewSocket() {
               << std::endl;
 
     SOCKET_CLOSE(remote);
+}
+
+// initializing socket environment and setup socket on windows
+void Ss_Network::socketEnvironmentInit() {
+    if (!_socketSetup) {
+#ifdef __windows__
+        // windows socket setup
+        WSADATA winSockEnv = {0};
+        if (WSAStartup(MAKEWORD(2, 2), &winSockEnv) != OPERATOR_SUCCESS) {
+            Ss_Core::printLastError("socket setup failure on windows");
+            std::exit(1);
+
+        }
+#endif
+    }
+
+
+    // initializing selector
+    if (_selector == nullptr) {
+        _selector.reset(new Ss_Selector(
+            std::bind(&Ss_Network::selectorCallback,
+                 std::placeholders::_1, std::placeholders::_2
+            )
+        ));
+    }
+
+    _socketSetup = true;
+}
+
+// cleanup environment for socket
+void Ss_Network::socketEnvironmentClean() {
+    if (_socketSetup && _availableNetworkCount == 0) {
+#ifdef __windows__
+        if (WSACleanup() != OPERATOR_SUCCESS) {
+            Ss_Core::printLastError("socket shutdown failure on windows");
+            std::exit(1);
+        }
+
+        _socketSetup = false;
+        std::cout << "socket shutdown success on windows" << std::endl;
+
+
+#endif
+    }
+
+    // cannot do anything in linux
 }
 
 // create `sockaddr_storage` by host and port
@@ -273,35 +313,3 @@ sockaddr_storage Ss_Network::socketGetAddr(const char *host, int port) {
     socketAddr.s4.sin_port = htons(static_cast<unsigned short>(port));
     return socketAddr.ss;
 }
-
-// methods for windows platform
-#ifdef __windows__
-
-// on windows socket setup
-void Ss_Network::winSocketSetup() {
-    if (!_socketSetup) {
-        WSADATA winSockEnv = {0};
-        if (WSAStartup(MAKEWORD(2, 2), &winSockEnv) != OPERATOR_SUCCESS) {
-            Ss_Core::printLastError("socket setup failure on windows");
-            std::exit(1);
-        }
-        _socketSetup = true;
-    }
-}
-
-// on windows socket shutdown
-void Ss_Network::winSocketShutdown() {
-    // check socket startup in windows and no Network available
-    if (_socketSetup && _availableNetworkCount == 0) {
-        if (WSACleanup() != OPERATOR_SUCCESS) {
-            Ss_Core::printLastError("socket shutdown failure on windows");
-            std::exit(1);
-        }
-
-        _socketSetup = false;
-        std::cout << "socket shutdown success on windows" << std::endl;
-    }
-}
-
-
-#endif /* methods for windows platform */

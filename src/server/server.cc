@@ -21,8 +21,7 @@ int main(int argc, char *argv[]) {
         std::exit(1);
     }
 
-    int number;
-    std::cin >> number;
+    server.startServer();
 
     return 0;
 }

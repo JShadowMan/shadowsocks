@@ -6,6 +6,7 @@
 // standard libraries
 #include <map>
 #include <list>
+#include <memory>
 #include <cstdint>
 #include <functional>
 #include <initializer_list>
@@ -36,7 +37,7 @@ class Ss_Selector {
         void select();
 
     public:
-        explicit Ss_Selector(SelectorCallback &cb);
+        explicit Ss_Selector(SelectorCallback &&cb);
         ~Ss_Selector() = default;
 
     private:

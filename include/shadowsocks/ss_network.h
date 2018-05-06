@@ -32,10 +32,10 @@ class Ss_Network {
 
     public:
         bool listen(const char *host, int port);
-        void select();
 
-    SELECTOR_CALLBACK:
-        void selectorCallback(SOCKET s, Ss_Selector::SelectorEvent event);
+    public:
+        static void startSelect();
+        static void stopSelect();
 
     private:
         bool createSocket();
@@ -48,10 +48,11 @@ class Ss_Network {
         bool tcpStartListening();
         bool udpStartListening();
 
-        void acceptNewSocket();
-
     private:
         static sockaddr_storage socketGetAddr(const char *host, int port);
+        static void acceptNewSocket(SOCKET s);
+        static void socketEnvironmentInit();
+        static void socketEnvironmentClean();
 
     private:
         using NetworkSocket = SOCKET;
@@ -60,19 +61,19 @@ class Ss_Network {
         NetworkFamily _family;
         NetworkType _type;
         NetworkSocket _socket;
-        Ss_Selector *_selector;
 
         int _listenSize = 8;
 
     private:
-        static int _availableNetworkCount;
-
-#ifdef __windows__
-    private:
-        static void winSocketSetup();
-        static void winSocketShutdown();
         static bool _socketSetup;
-#endif
+        static bool _selectState;
+        static int _availableNetworkCount;
+        static std::list<SOCKET> _serverSockets;
+        static std::shared_ptr<Ss_Selector> _selector;
+
+    SELECTOR_CALLBACK:
+        SELECTOR_CALLBACK_FUNCTION void selectorCallback(
+            SOCKET s, Ss_Selector::SelectorEvent event);
 };
 
 

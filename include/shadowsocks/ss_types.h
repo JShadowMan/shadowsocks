@@ -51,7 +51,8 @@
 
 
 // callback flag
-#define SELECTOR_CALLBACK        public
+#define SELECTOR_CALLBACK               public
+#define SELECTOR_CALLBACK_FUNCTION      static
 
 
 #endif // __SHADOWSOCKS_TYPES_INCLUDED__

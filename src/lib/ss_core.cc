@@ -37,3 +37,9 @@ void Ss_Core::printLastError(const char *additionalMessage) {
     std::string msg(additionalMessage);
     printLastError(msg);
 }
+
+// get password from (config)
+const std::string &Ss_Core::getPassword() {
+    static std::string password = SHADOWSOCKS_PASSWORD;
+    return password;
+}

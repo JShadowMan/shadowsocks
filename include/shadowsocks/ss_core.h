@@ -6,17 +6,20 @@
 #include <fstream>
 
 #ifndef SHADOWSOCKS_VERSION
-#   define SHADOWSOCKS_VERSION "UNKNOWN"
+#define SHADOWSOCKS_VERSION "UNKNOWN"
 #endif
 
 // check and definition shadowsocks module
 #ifndef SHADOWSOCKS_MODULE
-#   define SHADOWSOCKS_MODULE "UNKNOWN"
+#define SHADOWSOCKS_MODULE "UNKNOWN"
 #endif
 
 // MIT License link
 #define SHADOWSOCKS_LICENSE_LINK \
     "https://raw.githubusercontent.com/JShadowMan/shadowsocks/master/LICENSE"
+
+// password encrypt
+#define SHADOWSOCKS_PASSWORD "Hello, World"
 
 
 /* `Ss_Core` class */
@@ -26,6 +29,7 @@ class Ss_Core {
         static std::string &&getLastError();
         static void printLastError(std::string &additionalMessage);
         static void printLastError(const char *additionalMessage);
+        static const std::string &getPassword();
 };
 
 
