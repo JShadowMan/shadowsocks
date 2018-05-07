@@ -1,3 +1,4 @@
+#include <cstdio>
 #include <cstdlib>
 #include <cerrno>
 #include <cstring>
@@ -42,4 +43,12 @@ void Ss_Core::printLastError(const char *additionalMessage) {
 const std::string &Ss_Core::getPassword() {
     static std::string password = SHADOWSOCKS_PASSWORD;
     return password;
+}
+
+SOCKET Ss_Core::getInputFileDescriptor() {
+#ifdef __linux__
+    return static_cast<SOCKET>(fileno(stdin));
+#elif __windows__
+    return static_cast<SOCKET>(stdin->_file);
+#endif
 }

@@ -95,17 +95,6 @@ bool Ss_Network::listen(const char *host, int port) {
     return true;
 }
 
-// selector callback
-void Ss_Network::selectorCallback(SOCKET s, Ss_Selector::SelectorEvent event) {
-    auto it = std::find(_serverSockets.begin(), _serverSockets.end(), s);
-    if (it != _serverSockets.end()) {
-        acceptNewSocket(s);
-    }
-
-    std::cout << "Callback: " << s << " " << static_cast<int>(event)
-              << std::endl;
-}
-
 // start select
 void Ss_Network::startSelect() {
     do {
@@ -231,7 +220,10 @@ void Ss_Network::acceptNewSocket(SOCKET s) {
               << inet_ntoa(((struct sockaddr_in*) &ss)->sin_addr)
               << std::endl;
 
-    SOCKET_CLOSE(remote);
+    _selector->registerSocket(remote, {
+        Ss_Selector::SelectorEvent::SE_READABLE,
+        Ss_Selector::SelectorEvent::SE_WRITABLE
+    });
 }
 
 // initializing socket environment and setup socket on windows
@@ -256,6 +248,8 @@ void Ss_Network::socketEnvironmentInit() {
                  std::placeholders::_1, std::placeholders::_2
             )
         ));
+
+        registerInputToSelector();
     }
 
     _socketSetup = true;
@@ -278,6 +272,13 @@ void Ss_Network::socketEnvironmentClean() {
     }
 
     // cannot do anything in linux
+}
+
+// register stdin to selector
+void Ss_Network::registerInputToSelector() {
+    _selector->registerSocket(Ss_Core::getInputFileDescriptor(), {
+        Ss_Selector::SelectorEvent::SE_READABLE
+    });
 }
 
 // create `sockaddr_storage` by host and port
@@ -312,4 +313,23 @@ sockaddr_storage Ss_Network::socketGetAddr(const char *host, int port) {
 
     socketAddr.s4.sin_port = htons(static_cast<unsigned short>(port));
     return socketAddr.ss;
+}
+
+// selector callback
+void Ss_Network::selectorCallback(SOCKET s, Ss_Selector::SelectorEvent event) {
+    auto it = std::find(_serverSockets.begin(), _serverSockets.end(), s);
+    if (it != _serverSockets.end()) {
+        acceptNewSocket(s);
+    }
+
+    if (s == Ss_Core::getInputFileDescriptor()) {
+        std::string command;
+        std::cin >> command;
+        if (command == "q" || command == "exit") {
+            std::exit(0);
+        }
+    }
+
+    std::cout << "Callback: " << s << " " << static_cast<int>(event)
+              << std::endl;
 }

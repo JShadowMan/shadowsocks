@@ -22,6 +22,10 @@
 #define SHADOWSOCKS_PASSWORD "Hello, World"
 
 
+// other shadowsocks headers
+#include "shadowsocks/ss_types.h"
+
+
 /* `Ss_Core` class */
 class Ss_Core {
     public:
@@ -30,6 +34,7 @@ class Ss_Core {
         static void printLastError(std::string &additionalMessage);
         static void printLastError(const char *additionalMessage);
         static const std::string &getPassword();
+        static SOCKET getInputFileDescriptor();
 };
 
 

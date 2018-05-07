@@ -72,6 +72,13 @@ void Ss_Selector::select() {
     FD_ZERO(&writable);
 
     for (auto &s : _sockets) {
+#ifdef __windows__
+        // select cannot use to non-socket in windows
+        if (s.first == 0) {
+            continue;
+        }
+#endif
+
         if (s.second & SELECTOR_EVENT_IN) {
             FD_SET(s.first, &readable);
         }
@@ -83,6 +90,7 @@ void Ss_Selector::select() {
 
     int total = ::select(FD_SETSIZE, &readable, &writable, nullptr, nullptr);
     if (total == SOCKET_ERROR) {
+        std::cout << WSAGetLastError() << std::endl;
         Ss_Core::printLastError("select error occurs");
         std::exit(1);
     }

@@ -53,6 +53,8 @@ class Ss_Network {
         static void acceptNewSocket(SOCKET s);
         static void socketEnvironmentInit();
         static void socketEnvironmentClean();
+        static void registerInputToSelector();
+
 
     private:
         using NetworkSocket = SOCKET;
