@@ -63,8 +63,9 @@ class Ss_Network {
         NetworkFamily _family;
         NetworkType _type;
         NetworkSocket _socket;
-
         int _listenSize = 8;
+        std::list<SOCKET> _inqueueSockets;
+        std::list<SOCKET> _clientSockets;
 
     private:
         static bool _socketSetup;

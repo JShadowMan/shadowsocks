@@ -52,7 +52,6 @@ Ss_Network::~Ss_Network() {
 
     std::cout << "close socket success, socket = " << _socket
               << std::endl;
-
 }
 
 // tcp network factory
