@@ -3,6 +3,20 @@
 #pragma once
 
 
+// standard libraries
+#include <map>
+#include <list>
+#include <memory>
+#include <cstdint>
+#include <cstdlib>
+#include <cstring>
+#include <sstream>
+#include <iostream>
+#include <algorithm>
+#include <functional>
+#include <initializer_list>
+
+
 // types definition
 #ifdef __linux__
 #include <sys/types.h>
@@ -52,7 +66,7 @@
 
 // callback flag
 #define SELECTOR_CALLBACK               public
-#define SELECTOR_CALLBACK_FUNCTION      static
+#define SESSION_CALLBACK                public
 
 
 #endif // __SHADOWSOCKS_TYPES_INCLUDED__

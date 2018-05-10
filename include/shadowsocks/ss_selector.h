@@ -3,15 +3,6 @@
 #pragma once
 
 
-// standard libraries
-#include <map>
-#include <list>
-#include <memory>
-#include <cstdint>
-#include <functional>
-#include <initializer_list>
-
-
 // shadowsocks headers
 #include "shadowsocks/ss_types.h"
 

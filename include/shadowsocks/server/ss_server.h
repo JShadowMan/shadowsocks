@@ -3,10 +3,6 @@
 #pragma once
 
 
-// standard libraries
-#include <memory>
-
-
 // other shadowsocks headers
 #include "shadowsocks/ss_network.h"
 

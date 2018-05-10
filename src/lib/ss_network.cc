@@ -1,8 +1,3 @@
-#include <iostream>
-#include <cstdlib>
-#include <cstring>
-#include <sstream>
-#include <algorithm>
 #include "shadowsocks/ss_core.h"
 #include "shadowsocks/ss_network.h"
 
@@ -35,6 +30,7 @@ int Ss_Network::_availableNetworkCount = 0;
 std::shared_ptr<Ss_Selector> Ss_Network::_selector(nullptr);
 std::list<SOCKET> Ss_Network::_serverSockets{};
 bool Ss_Network::_socketSetup = false;
+std::map<SOCKET, Ss_Session> Ss_Network::_sessions{};
 
 
 // Ss_Network constructor
@@ -219,10 +215,13 @@ void Ss_Network::acceptNewSocket(SOCKET s) {
               << inet_ntoa(((struct sockaddr_in*) &ss)->sin_addr)
               << std::endl;
 
+    // register remote events
     _selector->registerSocket(remote, {
-        Ss_Selector::SelectorEvent::SE_READABLE,
-        Ss_Selector::SelectorEvent::SE_WRITABLE
+        Ss_Selector::SelectorEvent::SE_READABLE
     });
+
+    // create session
+    _sessions[remote] = Ss_Session(remote);
 }
 
 // initializing socket environment and setup socket on windows
@@ -236,9 +235,10 @@ void Ss_Network::socketEnvironmentInit() {
             std::exit(1);
 
         }
+
+
 #endif
     }
-
 
     // initializing selector
     if (_selector == nullptr) {
@@ -315,10 +315,11 @@ sockaddr_storage Ss_Network::socketGetAddr(const char *host, int port) {
 }
 
 // selector callback
-void Ss_Network::selectorCallback(SOCKET s, Ss_Selector::SelectorEvent event) {
+void Ss_Network::selectorCallback(SOCKET s, Ss_Selector::SelectorEvent e) {
     auto it = std::find(_serverSockets.begin(), _serverSockets.end(), s);
     if (it != _serverSockets.end()) {
         acceptNewSocket(s);
+        return;
     }
 
     if (s == Ss_Core::getInputFileDescriptor()) {
@@ -327,8 +328,21 @@ void Ss_Network::selectorCallback(SOCKET s, Ss_Selector::SelectorEvent event) {
         if (command == "q" || command == "exit") {
             std::exit(0);
         }
+        return;
     }
 
-    std::cout << "Callback: " << s << " " << static_cast<int>(event)
-              << std::endl;
+    if (_sessions.find(s) == _sessions.end()) {
+        Ss_Core::printLastError("what happened");
+        std::exit(1);
+    }
+
+    /**
+     * @todo endless loop for check tcp/udp buffer size
+     */
+    switch (e) {
+        case Ss_Selector::SelectorEvent::SE_READABLE:
+            _sessions[s].readableHandle(); break;
+        case Ss_Selector::SelectorEvent::SE_WRITABLE:
+            _sessions[s].writableHandle(); break;
+    }
 }

@@ -6,6 +6,7 @@
 // other shadowsocks headers
 #include "shadowsocks/ss_types.h"
 #include "shadowsocks/ss_selector.h"
+#include "shadowsocks/ss_session.h"
 
 
 /* `Ss_Network` class */
@@ -48,13 +49,14 @@ class Ss_Network {
         bool tcpStartListening();
         bool udpStartListening();
 
+
+
     private:
         static sockaddr_storage socketGetAddr(const char *host, int port);
-        static void acceptNewSocket(SOCKET s);
         static void socketEnvironmentInit();
         static void socketEnvironmentClean();
         static void registerInputToSelector();
-
+        static void acceptNewSocket(SOCKET s);
 
     private:
         using NetworkSocket = SOCKET;
@@ -64,8 +66,6 @@ class Ss_Network {
         NetworkType _type;
         NetworkSocket _socket;
         int _listenSize = 8;
-        std::list<SOCKET> _inqueueSockets;
-        std::list<SOCKET> _clientSockets;
 
     private:
         static bool _socketSetup;
@@ -73,10 +73,10 @@ class Ss_Network {
         static int _availableNetworkCount;
         static std::list<SOCKET> _serverSockets;
         static std::shared_ptr<Ss_Selector> _selector;
+        static std::map<SOCKET, Ss_Session> _sessions;
 
     SELECTOR_CALLBACK:
-        SELECTOR_CALLBACK_FUNCTION void selectorCallback(
-            SOCKET s, Ss_Selector::SelectorEvent event);
+        static void selectorCallback(SOCKET s, Ss_Selector::SelectorEvent e);
 };
 
 
