@@ -336,9 +336,6 @@ void Ss_Network::selectorCallback(SOCKET s, Ss_Selector::SelectorEvent e) {
         std::exit(1);
     }
 
-    /**
-     * @todo endless loop for check tcp/udp buffer size
-     */
     switch (e) {
         case Ss_Selector::SelectorEvent::SE_READABLE:
             _sessions[s].readableHandle(); break;

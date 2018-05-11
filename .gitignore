@@ -40,3 +40,5 @@ cmake-build*
 # build directory
 build
 
+# develop tools
+__*.py

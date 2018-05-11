@@ -51,22 +51,27 @@
 #endif /* socket headers end */
 
 
-// socket error flag
-#ifndef SOCKET_ERROR
-#define SOCKET_ERROR OPERATOR_FAILURE
-
-
-#endif /* socket error flag end */
-
-
 // operator flags
 #define OPERATOR_SUCCESS                (0)
 #define OPERATOR_FAILURE                (-1)
 
 
+// socket error flag
+#ifndef SOCKET_ERROR
+#define SOCKET_ERROR                    OPERATOR_FAILURE
+
+
+#endif /* socket error flag end */
+
+
 // callback flag
-#define SELECTOR_CALLBACK               public
-#define SESSION_CALLBACK                public
+#define CALLBACK_ACCESS                 public
+#define SELECTOR_CALLBACK               CALLBACK_ACCESS
+#define SESSION_CALLBACK                CALLBACK_ACCESS
+
+
+// buffer size
+#define BUFFER_SIZE                     (8 * 1024)
 
 
 #endif // __SHADOWSOCKS_TYPES_INCLUDED__

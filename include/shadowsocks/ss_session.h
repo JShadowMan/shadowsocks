@@ -5,6 +5,7 @@
 
 // other shadowsocks headers
 #include "shadowsocks/ss_types.h"
+#include "shadowsocks/ss_package.h"
 
 
 /* `Ss_Session` class */
@@ -18,12 +19,8 @@ class Ss_Session {
         void writableHandle();
 
     private:
-        std::shared_ptr<u_char> peekBuffer(int length);
-        bool bufferSizeGreatThan(int length);
-        std::shared_ptr<u_char> fetchBuffer(int length);
-
-    private:
         SOCKET _clientSocket;
+        Ss_Package _package;
 };
 
 
