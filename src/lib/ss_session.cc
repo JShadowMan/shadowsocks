@@ -12,15 +12,17 @@ void Ss_Session::readableHandle() {
     int count = 0;
 
     do {
-        Ss_Package::Package &package = _package.get();
+        Ss_Package::Buffer &buffer = _package.getBuffer();
 
-        auto insertPos =  package.first + package.second;
-        auto lessCount = Ss_Package::PACKAGE_SIZE - package.second;
-        count = recv(_clientSocket, insertPos, lessCount, 0);
-        if (count != lessCount) {
+        count = recv(_clientSocket, BUFFER_GET_INSERT_POINTER(buffer),
+                     BUFFER_AVAILABLE_SIZE(buffer), 0);
+
+        // check socket buffer
+        if (count != BUFFER_AVAILABLE_SIZE(buffer)) {
             _package.update(count);
             break;
         }
+        // allocate next block
         _package.update();
     } while (true);
 

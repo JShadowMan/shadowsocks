@@ -12,19 +12,18 @@ class Ss_Package {
     friend std::ostream &operator<<(std::ostream &out, const Ss_Package &p);
 
     public:
-        using Package = std::pair<char*, int>;
-        static constexpr int PACKAGE_SIZE = BUFFER_SIZE;
+        using Buffer = std::pair<char*, int>;
 
     public:
         Ss_Package() = default;
 
     public:
-        Package &get();
+        Buffer &getBuffer();
         void update(int count);
         void update();
 
     private:
-        std::list<Package> _buffers;
+        std::list<Buffer> _buffers;
 };
 
 

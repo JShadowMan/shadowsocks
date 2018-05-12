@@ -72,6 +72,12 @@
 
 // buffer size
 #define BUFFER_SIZE                     (8 * 1024)
+#define BUFFER_GET_POINTER(_B)          ((_B).first)
+#define BUFFER_GET_SPEC_POINTER(_B, _N) (BUFFER_GET_POINTER(_B) + (_N))
+#define BUFFER_GET_SIZE(_B)             ((_B).second)
+#define BUFFER_GET_INSERT_POINTER(_B)   ((_B).first + (_B).second)
+#define BUFFER_AVAILABLE_SIZE(_B)       (BUFFER_SIZE - BUFFER_GET_SIZE(_B))
+#define BUFFER_PRINT_SIZE               (8)
 
 
 #endif // __SHADOWSOCKS_TYPES_INCLUDED__
