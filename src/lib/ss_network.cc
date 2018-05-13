@@ -336,10 +336,21 @@ void Ss_Network::selectorCallback(SOCKET s, Ss_Selector::SelectorEvent e) {
         std::exit(1);
     }
 
-    switch (e) {
-        case Ss_Selector::SelectorEvent::SE_READABLE:
-            _sessions[s].readableHandle(); break;
-        case Ss_Selector::SelectorEvent::SE_WRITABLE:
-            _sessions[s].writableHandle(); break;
+    try {
+        switch (e) {
+            case Ss_Selector::SelectorEvent::SE_READABLE:
+                _sessions[s].readableHandle(); break;
+            case Ss_Selector::SelectorEvent::SE_WRITABLE:
+                _sessions[s].writableHandle(); break;
+        }
+    } catch (SessionClosed &e) {
+        std::cout << "session closed: " << s << std::endl;
+
+        // delete session
+        _sessions.erase(s);
+        // remove selector
+        _selector->deleteSocket(s);
+        // close socket
+        SOCKET_CLOSE(s);
     }
 }

@@ -25,6 +25,7 @@ class Ss_Selector {
 
     public:
         void registerSocket(SOCKET s, SelectorEvents events);
+        void deleteSocket(SOCKET s);
         void select();
 
     public:

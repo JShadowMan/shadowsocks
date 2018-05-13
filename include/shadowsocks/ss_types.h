@@ -80,4 +80,11 @@
 #define BUFFER_PRINT_SIZE               (8)
 
 
+// session closed exception
+class SessionClosed : std::exception {
+    public:
+        explicit SessionClosed() noexcept = default;
+};
+
+
 #endif // __SHADOWSOCKS_TYPES_INCLUDED__

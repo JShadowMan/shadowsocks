@@ -2,6 +2,20 @@
 #include "shadowsocks/ss_package.h"
 
 
+// Ss_Package destructor
+Ss_Package::~Ss_Package() {
+    std::cout << "package destructor" << std::endl;
+
+    for (auto &buffer : _buffers) {
+        delete[] buffer.first;
+
+        buffer.first = nullptr;
+        buffer.second = -1;
+    }
+
+    std::cout << "buffer cleaned" << std::endl;
+}
+
 // get last package
 Ss_Package::Buffer &Ss_Package::getBuffer() {
     if (_buffers.empty()) {

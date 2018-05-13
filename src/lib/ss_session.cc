@@ -7,6 +7,11 @@ Ss_Session::Ss_Session(SOCKET s): _clientSocket(s) {
     std::cout << "new session: " << _clientSocket << std::endl;
 }
 
+// clean session data
+Ss_Session::~Ss_Session() {
+    std::cout << "session destructor" << std::endl;
+}
+
 // session readable
 void Ss_Session::readableHandle() {
     int count = 0;
@@ -19,9 +24,15 @@ void Ss_Session::readableHandle() {
 
         // check socket buffer
         if (count != BUFFER_AVAILABLE_SIZE(buffer)) {
+            // connection closed
+            if (count == 0) {
+                throw SessionClosed();
+            }
+
             _package.update(count);
             break;
         }
+
         // allocate next block
         _package.update();
     } while (true);

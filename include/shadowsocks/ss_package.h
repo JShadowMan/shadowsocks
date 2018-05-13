@@ -16,6 +16,7 @@ class Ss_Package {
 
     public:
         Ss_Package() = default;
+        ~Ss_Package();
 
     public:
         Buffer &getBuffer();

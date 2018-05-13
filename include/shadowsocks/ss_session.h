@@ -12,6 +12,7 @@
 class Ss_Session {
     public:
         Ss_Session() = default;
+        ~Ss_Session();
         explicit Ss_Session(SOCKET s);
 
     SESSION_CALLBACK:
@@ -19,7 +20,7 @@ class Ss_Session {
         void writableHandle();
 
     private:
-        SOCKET _clientSocket;
+        SOCKET _clientSocket{};
         Ss_Package _package;
 };
 

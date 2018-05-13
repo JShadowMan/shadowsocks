@@ -22,6 +22,12 @@ void Ss_Selector::registerSocket(SOCKET s, SelectorEvents events) {
     }
 }
 
+// remove socket from selector
+void Ss_Selector::deleteSocket(SOCKET s) {
+    std::cout << "delete from selector: " << s << std::endl;
+    _sockets.erase(s);
+}
+
 // start select all socket descriptor
 #ifdef __linux__
 // on linux, `poll/epoll` available
