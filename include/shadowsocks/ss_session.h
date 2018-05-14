@@ -20,6 +20,9 @@ class Ss_Session {
         void writableHandle();
 
     private:
+        void checkSessionError();
+
+    private:
         SOCKET _clientSocket{};
         Ss_Package _package;
 };

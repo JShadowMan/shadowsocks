@@ -1,6 +1,3 @@
-#include <map>
-#include <cstdlib>
-#include <iostream>
 #include "shadowsocks/ss_core.h"
 #include "shadowsocks/ss_selector.h"
 

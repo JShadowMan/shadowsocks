@@ -1,4 +1,4 @@
-#include <iostream>
+#include "shadowsocks/ss_core.h"
 #include "shadowsocks/ss_session.h"
 
 
@@ -19,22 +19,28 @@ void Ss_Session::readableHandle() {
     do {
         Ss_Package::Buffer &buffer = _package.getBuffer();
 
-        count = recv(_clientSocket, BUFFER_GET_INSERT_POINTER(buffer),
-                     BUFFER_AVAILABLE_SIZE(buffer), 0);
+        // receive data from socket to package buffers
+        auto insertPtr = BUFFER_GET_INSERT_POINTER(buffer);
+        auto bufferAvailableSize = BUFFER_AVAILABLE_SIZE(buffer);
+        count = recv(_clientSocket, insertPtr, bufferAvailableSize, 0);
+        // update buffer size
+        _package.updateBuffer(count);
+        // check has complete package
+        while (_package.hasPackage()) {
+            // decrypt package and send request, response receive to outputs
+        }
 
-        // check socket buffer
-        if (count != BUFFER_AVAILABLE_SIZE(buffer)) {
+        // receive complete or connection closed
+        if (count != bufferAvailableSize) {
             // connection closed
             if (count == 0) {
                 throw SessionClosed();
+            } else if (count == -1) {
+                checkSessionError();
             }
 
-            _package.update(count);
             break;
         }
-
-        // allocate next block
-        _package.update();
     } while (true);
 
     std::cout << _package;
@@ -44,4 +50,28 @@ void Ss_Session::readableHandle() {
 void Ss_Session::writableHandle() {
     // not handle anytime
     std::cout << _clientSocket << " writable" << std::endl;
+}
+
+// when session receive data error occurs
+void Ss_Session::checkSessionError() {
+#ifdef __linux__
+    // do nothing on linux
+
+
+#elif __windows__
+    switch (WSAGetLastError()) {
+        case CONNECTION_RESET_BY_PEER:
+            throw SessionClosed();
+        default: {
+            std::stringstream ss;
+            ss << "window socket error: " << WSAGetLastError() << std::endl;
+            Ss_Core::printLastError(ss.str().c_str());
+            std::exit(1);
+        }
+    }
+
+
+#endif
+
+    // Ss_Session::checkSessionError
 }

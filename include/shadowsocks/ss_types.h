@@ -64,20 +64,30 @@
 #endif /* socket error flag end */
 
 
+// session error flags
+#define CONNECTION_RESET_BY_PEER       (10054)
+
+
+
 // callback flag
 #define CALLBACK_ACCESS                 public
 #define SELECTOR_CALLBACK               CALLBACK_ACCESS
 #define SESSION_CALLBACK                CALLBACK_ACCESS
 
 
-// buffer size
-#define BUFFER_SIZE                     (8 * 1024)
+// Buffer
+#define BUFFER_SIZE                     (4 * 1024)
+#define BUFFER_PRINT_SIZE               (8)
 #define BUFFER_GET_POINTER(_B)          ((_B).first)
 #define BUFFER_GET_SPEC_POINTER(_B, _N) (BUFFER_GET_POINTER(_B) + (_N))
 #define BUFFER_GET_SIZE(_B)             ((_B).second)
 #define BUFFER_GET_INSERT_POINTER(_B)   ((_B).first + (_B).second)
 #define BUFFER_AVAILABLE_SIZE(_B)       (BUFFER_SIZE - BUFFER_GET_SIZE(_B))
-#define BUFFER_PRINT_SIZE               (8)
+
+
+// Package
+#define PACKAGE_HEADER_SIZE             (4)
+#define PACKAGE_BIDY_SIZE(_PH)          (19)
 
 
 // session closed exception

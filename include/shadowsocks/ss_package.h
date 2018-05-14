@@ -20,11 +20,21 @@ class Ss_Package {
 
     public:
         Buffer &getBuffer();
-        void update(int count);
-        void update();
+        void updateBuffer(int count);
+        void createBuffer();
+
+    public:
+        bool hasPackage();
+
+    private:
+        bool hasPackageHeader();
 
     private:
         std::list<Buffer> _buffers;
+        std::list<Buffer> _outputs;
+
+        int _bytesTotal = 0;
+        int _currentConsumeIndex = 0;
 };
 
 

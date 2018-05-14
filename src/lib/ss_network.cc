@@ -30,7 +30,7 @@ int Ss_Network::_availableNetworkCount = 0;
 std::shared_ptr<Ss_Selector> Ss_Network::_selector(nullptr);
 std::list<SOCKET> Ss_Network::_serverSockets{};
 bool Ss_Network::_socketSetup = false;
-std::map<SOCKET, Ss_Session> Ss_Network::_sessions{};
+std::map<SOCKET, std::shared_ptr<Ss_Session>> Ss_Network::_sessions{};
 
 
 // Ss_Network constructor
@@ -221,7 +221,7 @@ void Ss_Network::acceptNewSocket(SOCKET s) {
     });
 
     // create session
-    _sessions[remote] = Ss_Session(remote);
+    _sessions[remote] = std::make_shared<Ss_Session>(remote);
 }
 
 // initializing socket environment and setup socket on windows
@@ -339,9 +339,9 @@ void Ss_Network::selectorCallback(SOCKET s, Ss_Selector::SelectorEvent e) {
     try {
         switch (e) {
             case Ss_Selector::SelectorEvent::SE_READABLE:
-                _sessions[s].readableHandle(); break;
+                _sessions[s]->readableHandle(); break;
             case Ss_Selector::SelectorEvent::SE_WRITABLE:
-                _sessions[s].writableHandle(); break;
+                _sessions[s]->writableHandle(); break;
         }
     } catch (SessionClosed &e) {
         std::cout << "session closed: " << s << std::endl;

@@ -73,7 +73,7 @@ class Ss_Network {
         static int _availableNetworkCount;
         static std::list<SOCKET> _serverSockets;
         static std::shared_ptr<Ss_Selector> _selector;
-        static std::map<SOCKET, Ss_Session> _sessions;
+        static std::map<SOCKET, std::shared_ptr<Ss_Session>> _sessions;
 
     SELECTOR_CALLBACK:
         static void selectorCallback(SOCKET s, Ss_Selector::SelectorEvent e);
