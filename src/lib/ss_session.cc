@@ -17,18 +17,18 @@ void Ss_Session::readableHandle() {
     int count = 0;
 
     do {
-        Ss_Package::Buffer &buffer = _package.getBuffer();
+        Ss_Buffer::Buffer &buffer = _buffers.getBuffer();
 
         // receive data from socket to package buffers
         auto insertPtr = BUFFER_GET_INSERT_POINTER(buffer);
         auto bufferAvailableSize = BUFFER_AVAILABLE_SIZE(buffer);
         count = recv(_clientSocket, insertPtr, bufferAvailableSize, 0);
         // update buffer size
-        _package.updateBuffer(count);
+        _buffers.updateBuffer(count);
         // check has complete package
-        while (_package.hasPackage()) {
-            // decrypt package and send request, response receive to outputs
-        }
+//        while (_package.hasPackage()) {
+//            // decrypt package and send request, response receive to outputs
+//        }
 
         // receive complete or connection closed
         if (count != bufferAvailableSize) {
@@ -41,9 +41,11 @@ void Ss_Session::readableHandle() {
 
             break;
         }
+
+        ::send(_clientSocket, "\x05\x00", 2, 0);
     } while (true);
 
-    std::cout << _package;
+    std::cout << _buffers;
 }
 
 // session writable

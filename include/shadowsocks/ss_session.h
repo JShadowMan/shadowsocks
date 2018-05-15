@@ -5,6 +5,7 @@
 
 // other shadowsocks headers
 #include "shadowsocks/ss_types.h"
+#include "shadowsocks/ss_buffer.h"
 #include "shadowsocks/ss_package.h"
 
 
@@ -24,7 +25,8 @@ class Ss_Session {
 
     private:
         SOCKET _clientSocket{};
-        Ss_Package _package;
+        Ss_Buffer _buffers;
+        Ss_Package _packages;
 };
 
 

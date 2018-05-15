@@ -79,7 +79,7 @@
 #define BUFFER_SIZE                     (4 * 1024)
 #define BUFFER_PRINT_SIZE               (8)
 #define BUFFER_GET_POINTER(_B)          ((_B).first)
-#define BUFFER_GET_SPEC_POINTER(_B, _N) (BUFFER_GET_POINTER(_B) + (_N))
+#define BUFFER_SPEC_POINTER(_B, _N)     (BUFFER_GET_POINTER(_B) + (_N))
 #define BUFFER_GET_SIZE(_B)             ((_B).second)
 #define BUFFER_GET_INSERT_POINTER(_B)   ((_B).first + (_B).second)
 #define BUFFER_AVAILABLE_SIZE(_B)       (BUFFER_SIZE - BUFFER_GET_SIZE(_B))
@@ -88,6 +88,11 @@
 // Package
 #define PACKAGE_HEADER_SIZE             (4)
 #define PACKAGE_BIDY_SIZE(_PH)          (19)
+
+
+// Toolkit
+#define PRINT_BYTE(_CH)                 std::printf("0x%02x ", BYTE((_CH)))
+#define BYTE(_CH)                       ((_CH) & 0xff)
 
 
 // session closed exception
