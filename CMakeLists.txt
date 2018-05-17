@@ -21,6 +21,7 @@ IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
     add_definitions(-D__linux__)
 ELSEIF (CMAKE_SYSTEM_NAME MATCHES "Windows")
     add_definitions(-D__windows__)
+    # socket library on windows
     link_libraries(ws2_32.lib)
 ELSE ()
     message(ERROR "Other platform: ${CMAKE_SYSTEM_NAME}")

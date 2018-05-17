@@ -1,15 +1,15 @@
 #ifndef __SHADOWSOCKS_TYPES_INCLUDED__
 #define __SHADOWSOCKS_TYPES_INCLUDED__
-#pragma once
 
 
-// standard libraries
+// standard headers
 #include <map>
 #include <list>
 #include <memory>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <fstream>
 #include <sstream>
 #include <iostream>
 #include <algorithm>
@@ -17,13 +17,24 @@
 #include <initializer_list>
 
 
-// types definition
+// platform headers
 #ifdef __linux__
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <poll.h>
 #include <sys/epoll.h>
+#include <poll.h>
 
+
+#elif __windows__
+#include <Windows.h>
+#include <WinSock2.h>
+
+
+#endif
+
+
+// platform types alias and definitions
+#ifdef __linux__
 #define SOCKET                          int
 #define SELECTOR_KEY                    SOCKET
 #define SELECTOR_VALUE                  pollfd
@@ -35,9 +46,6 @@
 
 
 #elif __windows__
-#include <Windows.h>
-#include <WinSock2.h>
-
 #define SOCKET                          SOCKET
 #define SELECTOR_KEY                    SOCKET
 #define SELECTOR_VALUE                  int
@@ -48,7 +56,27 @@
 #define SELECTOR_VALUE_ADD(_V, _E)      (_V) |= (_E)
 
 
-#endif /* socket headers end */
+#endif
+
+
+// shadowsocks version definition
+#ifndef SHADOWSOCKS_VERSION
+#define SHADOWSOCKS_VERSION "UNKNOWN"
+
+
+#endif
+
+// shadowsocks module definition
+#ifndef SHADOWSOCKS_MODULE
+#define SHADOWSOCKS_MODULE "UNKNOWN"
+
+
+#endif
+
+
+// shadowsocks license link
+#define SHADOWSOCKS_LICENSE_LINK \
+    "https://raw.githubusercontent.com/JShadowMan/shadowsocks/master/LICENSE"
 
 
 // operator flags
@@ -61,45 +89,16 @@
 #define SOCKET_ERROR                    OPERATOR_FAILURE
 
 
-#endif /* socket error flag end */
+#endif
 
 
 // session error flags
+#ifdef __linux__
+#elif __windows__
 #define CONNECTION_RESET_BY_PEER       (10054)
 
 
-
-// callback flag
-#define CALLBACK_ACCESS                 public
-#define SELECTOR_CALLBACK               CALLBACK_ACCESS
-#define SESSION_CALLBACK                CALLBACK_ACCESS
-
-
-// Buffer
-#define BUFFER_SIZE                     (4 * 1024)
-#define BUFFER_PRINT_SIZE               (8)
-#define BUFFER_GET_POINTER(_B)          ((_B).first)
-#define BUFFER_SPEC_POINTER(_B, _N)     (BUFFER_GET_POINTER(_B) + (_N))
-#define BUFFER_GET_SIZE(_B)             ((_B).second)
-#define BUFFER_GET_INSERT_POINTER(_B)   ((_B).first + (_B).second)
-#define BUFFER_AVAILABLE_SIZE(_B)       (BUFFER_SIZE - BUFFER_GET_SIZE(_B))
-
-
-// Package
-#define PACKAGE_HEADER_SIZE             (4)
-#define PACKAGE_BIDY_SIZE(_PH)          (19)
-
-
-// Toolkit
-#define PRINT_BYTE(_CH)                 std::printf("0x%02x ", BYTE((_CH)))
-#define BYTE(_CH)                       ((_CH) & 0xff)
-
-
-// session closed exception
-class SessionClosed : std::exception {
-    public:
-        explicit SessionClosed() noexcept = default;
-};
+#endif
 
 
 #endif // __SHADOWSOCKS_TYPES_INCLUDED__

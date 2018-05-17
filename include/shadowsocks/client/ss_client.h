@@ -1,6 +1,14 @@
 #ifndef __SHADOWSOCKS_CLIENT_INCLUDED__
 #define __SHADOWSOCKS_CLIENT_INCLUDED__
-#pragma once
+
+
+/**
+ * Class: SsClient
+ *
+ *
+ */
+class SsClient {
+};
 
 
 #endif // __SHADOWSOCKS_CLIENT_INCLUDED__
