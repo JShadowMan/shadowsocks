@@ -101,4 +101,8 @@
 #endif
 
 
+// logger default format
+#define LOGGER_DEFAULT_FORMAT           "%Y-%M-%D %h:%m:%s -> %MSG%";
+
+
 #endif // __SHADOWSOCKS_TYPES_INCLUDED__

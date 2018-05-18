@@ -6,6 +6,8 @@
  * entry of shadowsocks-client
  */
 int main(int argc, char *argv[]) {
+    SsCore::initShadowSocksEnvironments();
+
     auto client = new SsClient();
 
     return 0;

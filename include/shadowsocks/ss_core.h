@@ -14,6 +14,7 @@
 class SsCore {
     public:
         static void initShadowSocksEnvironments();
+        static void shutdownShadowSocks(int state = OPERATOR_FAILURE);
 
     private:
         static void initSocketEnvironments();
