@@ -7,29 +7,6 @@
 
 
 /**
- * Class: SsFormatter
- *
- *
- */
-class SsFormatter {
-    public:
-        using Format = const char *;
-
-    public:
-        explicit SsFormatter(Format fmt) : _format(fmt) {};
-
-    public:
-        std::string _format;
-
-    public:
-        template <typename Arg, typename ...Args>
-        std::string operator()(Arg arg, Args... args);
-        std::string operator()();
-};
-
-
-
-/**
  * Class: SsLogger
  *
  *
@@ -46,6 +23,7 @@ class SsLogger {
         };
 
     public:
+        using Format = const char *;
         using LoggerName = const char *;
         using SsLoggerPtr = std::shared_ptr<SsLogger>;
 
@@ -57,22 +35,20 @@ class SsLogger {
 
     public:
         static void addLogger(LoggerName name, SsLogger *logger);
-        static void verbose(std::string &message);
-        static void verbose(std::string &&message);
-        static void debug(std::string &message);
-        static void debug(std::string &&message);
-        static void info(std::string &message);
-        static void info(std::string &&message);
-        static void warning(std::string &message);
-        static void warning(std::string &&message);
-        static void error(std::string &message);
-        static void error(std::string &&message);
 
-        static void emergency(std::string &message);
-        static void emergency(std::string &&message);
+    public:
+        template <typename ...Args>
+        static void info(Format fmt, Args ...args);
+
+        template <typename ...Args>
+        static void emergency(Format fmt, Args ...args);
 
     private:
-        static void log(LoggerLevel level, std::string &message);
+        static void log(LoggerLevel level, std::string &&message);
+
+        template <typename ...Args>
+        static std::string format(int fmtStart, Args ...args);
+
 
     private:
         std::ostream &_output;
@@ -84,11 +60,24 @@ class SsLogger {
 };
 
 
-
-// template methods definition
-template<typename Arg, typename ...Args>
-std::string SsFormatter::operator()(Arg arg, Args... args) {
-    return "DEBUG MESSAGE";
+// interesting events.
+template<typename ...Args>
+void SsLogger::info(SsLogger::Format fmt, Args... args) {
+    log(LoggerLevel::LL_INFO, format(0, args...));
 }
+
+// system is unusable, will be exit
+template<typename ...Args>
+void SsLogger::emergency(SsLogger::Format fmt, Args... args) {
+//    SsFormatter formatter(fmt);
+//    log(LoggerLevel::LL_EMERGENCY, formatter(args...));
+}
+
+// format parameters and output it
+template<typename ...Args>
+std::string SsLogger::format(int fmtStart, Args... args) {
+    return std::__cxx11::string();
+}
+
 
 #endif // __SHADOWSOCKS_LOGGER_INCLUDED__

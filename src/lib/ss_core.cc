@@ -12,16 +12,14 @@ void SsCore::initSocketEnvironments() {
 #ifdef __windows__
     WSAData winSocket{};
     if (WSAStartup(MAKEWORD(2, 2), &winSocket) == OPERATOR_FAILURE) {
-        SsLogger::emergency(
-            SsFormatter("socket startup error occurs on windows")()
-        );
+        SsLogger::emergency("socket startup error occurs on windows");
     }
 
 
 #endif
     // do nothing other platform
 
-    SsLogger::info("socket environment initialized");
+    SsLogger::info("socket environment initialized, %d, %s, %f, %x", 1, "aa", 0.23, 1024);
 }
 
 // shutdown shadowsocks
