@@ -4,6 +4,9 @@
 
 // initializing environments
 void SsCore::initShadowSocksEnvironments() {
+    SsLogger::addLogger("stdout", new SsLogger(std::cout));
+
+
     initSocketEnvironments();
 }
 
@@ -19,7 +22,7 @@ void SsCore::initSocketEnvironments() {
 #endif
     // do nothing other platform
 
-    SsLogger::info("socket environment initialized, %d, %s, %f, %x", 1, "aa", 0.23, 1024);
+    SsLogger::info("socket environment initialized");
 }
 
 // shutdown shadowsocks

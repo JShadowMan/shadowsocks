@@ -5,7 +5,10 @@
 // standard headers
 #include <map>
 #include <list>
+#include <ctime>
+#include <tuple>
 #include <memory>
+#include <cassert>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
@@ -102,7 +105,8 @@
 
 
 // logger default format
-#define LOGGER_DEFAULT_FORMAT           "%Y-%M-%D %h:%m:%s -> %MSG%";
+#define LOGGER_DEFAULT_FORMAT           "%A %b %d %H:%M:%S %Y \t->\t "
+#define LOGGER_TIME_INFO_SIZE           (128)
 
 
 #endif // __SHADOWSOCKS_TYPES_INCLUDED__

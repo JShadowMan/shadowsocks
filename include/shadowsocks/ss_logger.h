@@ -6,6 +6,43 @@
 #include "shadowsocks/ss_types.h"
 
 
+/* runtime get index of tuple */
+template <size_t I>
+struct VisitImpl {
+    template <typename T, typename Func>
+    static void visit(T &tup, size_t idx, Func func) {
+        if (idx == I - 1) {
+            func(std::get<I - 1>(tup));
+        } else {
+            VisitImpl<I - 1>::visit(tup, idx, func);
+        }
+    }
+};
+
+template <>
+struct VisitImpl<0> {
+    template <typename T, typename F>
+    static void visit(T &tup, size_t idx, F fun) {
+        assert(false);
+    }
+};
+
+template <typename Func, typename ...Types>
+void visit(const std::tuple<Types...> &tup, size_t idx, Func func) {
+    VisitImpl<sizeof...(Types)>::visit(tup, idx, func);
+}
+
+struct TupleElemPrinter {
+    explicit TupleElemPrinter(std::ostream &out) : _output(out) {}
+    std::ostream &_output;
+
+    template<typename T>
+    void operator()(T value) {
+        _output << value;
+    }
+};
+
+
 /**
  * Class: SsLogger
  *
@@ -38,17 +75,29 @@ class SsLogger {
 
     public:
         template <typename ...Args>
+        static void verbose(Format fmt, Args ...args);
+
+        template <typename ...Args>
+        static void debug(Format fmt, Args ...args);
+
+        template <typename ...Args>
         static void info(Format fmt, Args ...args);
+
+        template <typename ...Args>
+        static void warning(Format fmt, Args ...args);
+
+        template <typename ...Args>
+        static void error(Format fmt, Args ...args);
 
         template <typename ...Args>
         static void emergency(Format fmt, Args ...args);
 
     private:
+        static std::string currentDate(Format fmt);
         static void log(LoggerLevel level, std::string &&message);
 
         template <typename ...Args>
-        static std::string format(int fmtStart, Args ...args);
-
+        static std::string format(Format fmt, Args ...args);
 
     private:
         std::ostream &_output;
@@ -60,23 +109,80 @@ class SsLogger {
 };
 
 
+// all the things that happened
+template<typename ...Args>
+void SsLogger::verbose(SsLogger::Format fmt, Args... args) {
+    log(LoggerLevel::LL_VERBOSE, format(fmt, args...));
+}
+
+// detailed debug information
+template<typename ...Args>
+void SsLogger::debug(SsLogger::Format fmt, Args... args) {
+    log(LoggerLevel::LL_DEBUG, format(fmt, args...));
+}
+
 // interesting events.
 template<typename ...Args>
 void SsLogger::info(SsLogger::Format fmt, Args... args) {
-    log(LoggerLevel::LL_INFO, format(0, args...));
+    log(LoggerLevel::LL_INFO, format(fmt, args...));
+}
+
+// exceptional occurrences that are not errors.
+template<typename ...Args>
+void SsLogger::warning(SsLogger::Format fmt, Args... args) {
+    log(LoggerLevel::LL_WARNING, format(fmt, args...));
+}
+
+// runtime errors that do not require immediate action but should typically
+// be logged and monitored.
+template<typename ...Args>
+void SsLogger::error(SsLogger::Format fmt, Args... args) {
+    log(LoggerLevel::LL_ERROR, format(fmt, args...));
 }
 
 // system is unusable, will be exit
 template<typename ...Args>
 void SsLogger::emergency(SsLogger::Format fmt, Args... args) {
-//    SsFormatter formatter(fmt);
-//    log(LoggerLevel::LL_EMERGENCY, formatter(args...));
+    log(LoggerLevel::LL_EMERGENCY, format(fmt, args...));
 }
 
 // format parameters and output it
 template<typename ...Args>
-std::string SsLogger::format(int fmtStart, Args... args) {
-    return std::__cxx11::string();
+std::string SsLogger::format(Format fmt, Args... args) {
+    std::stringstream ss;
+    TupleElemPrinter printer(ss);
+
+    auto tuple = std::make_tuple(args...);
+    size_t tupleSize = std::tuple_size<std::tuple<Args...>>::value;
+
+    size_t index = 0;
+    auto output = [&] (size_t &i) {
+        if (index < tupleSize) {
+            visit(tuple, index++, printer);
+            while (isalnum(fmt[++i])) {
+                ;
+            }
+            --i;
+        } else {
+            printer('%');
+        }
+    };
+
+    for (size_t i = 0; i < strlen(fmt); ++i) {
+        if (fmt[i] != '%') {
+            ss << fmt[i];
+        } else {
+            /**
+             * @todo hex oct and dec
+             */
+            switch (fmt[i + 1]) {
+                case '%': ss << fmt[i++]; break;  // escape %
+                default: output(++i);
+            }
+        }
+    }
+
+    return ss.str();
 }
 
 
