@@ -9,6 +9,7 @@
 #include <tuple>
 #include <memory>
 #include <cassert>
+#include <csignal>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
@@ -22,7 +23,9 @@
 
 // platform headers
 #ifdef __linux__
+#include <unistd.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/socket.h>
 #include <sys/epoll.h>
 #include <poll.h>
@@ -31,6 +34,7 @@
 #elif __windows__
 #include <Windows.h>
 #include <WinSock2.h>
+#include <ws2tcpip.h>
 
 
 #endif
@@ -88,8 +92,8 @@
 
 
 // socket error flag
-#ifndef SOCKET_ERROR
-#define SOCKET_ERROR                    OPERATOR_FAILURE
+#ifndef INVALID_SOCKET
+#define INVALID_SOCKET                  OPERATOR_FAILURE
 
 
 #endif
@@ -107,6 +111,11 @@
 // logger default format
 #define LOGGER_DEFAULT_FORMAT           "%A %b %d %H:%M:%S %Y \t->\t "
 #define LOGGER_TIME_INFO_SIZE           (128)
+
+
+// network
+using NetworkHost                       = const char *;
+using NetworkPort                       = short;
 
 
 #endif // __SHADOWSOCKS_TYPES_INCLUDED__

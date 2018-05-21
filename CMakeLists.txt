@@ -15,6 +15,10 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 endif ()
 
+if (CMAKE_BUILD_TYPE MATCHES "Debug")
+    add_definitions(-D__debug__)
+endif ()
+
 # platform setup
 message(STATUS "Current platform: ${CMAKE_SYSTEM_NAME}")
 IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
@@ -35,7 +39,21 @@ set(SHADOWSOCKS_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
 set(SHADOWSOCKS_SOURCES_DIR ${CMAKE_SOURCE_DIR}/src/lib)
 
 # sources for libraries
-aux_source_directory(${SHADOWSOCKS_SOURCES_DIR} SHADOWSOCKS_SOURCES)
+aux_source_directory(${SHADOWSOCKS_SOURCES_DIR} SHADOWSOCKS_COMMON_SOURCES)
+# sources for nwtwork libraries
+aux_source_directory(${SHADOWSOCKS_SOURCES_DIR}/network
+        SHADOWSOCKS_NETWORK_SOURCES)
+# sources for network relay
+aux_source_directory(${SHADOWSOCKS_SOURCES_DIR}/network/relay
+        SHADOWSOCKS_NETWORK_RELAY_SOURCES)
+
+# merge all sources
+set(
+    SHADOWSOCKS_SOURCES
+        ${SHADOWSOCKS_COMMON_SOURCES}
+        ${SHADOWSOCKS_NETWORK_SOURCES}
+        ${SHADOWSOCKS_NETWORK_RELAY_SOURCES}
+)
 
 # output directory
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)

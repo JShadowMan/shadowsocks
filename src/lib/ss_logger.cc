@@ -26,8 +26,11 @@ void SsLogger::log(LoggerLevel level, std::string &&message) {
     for (auto &pair : _loggers) {
         auto &logger = pair.second;
         if (level >= logger->_level) {
-            logger->_output << currentDate(logger->_format.c_str());
-            logger->_output << message;
+            logger->_output
+                << level << ": "
+                << currentDate(logger->_format.c_str())
+                << message
+                << std::endl;
         }
     }
 }
@@ -46,4 +49,18 @@ std::string SsLogger::currentDate(SsLogger::Format fmt) {
     delete[] buffer;
 
     return ss.str();
+}
+
+// output level text
+std::ostream &operator<<(std::ostream &out, const SsLogger::LoggerLevel &level) {
+    switch (level) {
+        case SsLogger::LoggerLevel::LL_VERBOSE:     out << "VERBOSE";   break;
+        case SsLogger::LoggerLevel::LL_DEBUG:       out << "DEBUG";     break;
+        case SsLogger::LoggerLevel::LL_INFO:        out << "INFO";      break;
+        case SsLogger::LoggerLevel::LL_WARNING:     out << "WARNING";   break;
+        case SsLogger::LoggerLevel::LL_ERROR:       out << "ERROR";     break;
+        case SsLogger::LoggerLevel::LL_EMERGENCY:   out << "EMERGENCY"; break;
+    }
+
+    return out;
 }

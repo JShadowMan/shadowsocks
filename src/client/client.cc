@@ -6,9 +6,13 @@
  * entry of shadowsocks-client
  */
 int main(int argc, char *argv[]) {
-    SsCore::initShadowSocksEnvironments();
+    SsCore::initShadowsocksEnvironments();
+    SsCore::startDaemon();
 
-    auto client = new SsClient();
+    auto client = std::make_shared<SsClient>("0.0.0.0", 9980);
+    if (!SsClient::hasDaemon()) {
+        client->start();
+    }
 
     return 0;
 }

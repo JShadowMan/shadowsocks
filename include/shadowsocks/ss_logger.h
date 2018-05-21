@@ -92,6 +92,10 @@ class SsLogger {
         template <typename ...Args>
         static void emergency(Format fmt, Args ...args);
 
+        template <typename ...Args>
+        static std::string log(SsLogger::LoggerLevel level,
+                               Format fmt, Args ...args);
+
     private:
         static std::string currentDate(Format fmt);
         static void log(LoggerLevel level, std::string &&message);
@@ -107,6 +111,10 @@ class SsLogger {
     private:
         static std::map<SsLogger::LoggerName, SsLogger::SsLoggerPtr> _loggers;
 };
+
+
+/* utility methods declare */
+std::ostream &operator<<(std::ostream &out, const SsLogger::LoggerLevel &level);
 
 
 // all the things that happened
@@ -144,6 +152,15 @@ void SsLogger::error(SsLogger::Format fmt, Args... args) {
 template<typename ...Args>
 void SsLogger::emergency(SsLogger::Format fmt, Args... args) {
     log(LoggerLevel::LL_EMERGENCY, format(fmt, args...));
+}
+
+// custom log message and return message
+template<typename ...Args>
+std::string
+SsLogger::log(SsLogger::LoggerLevel level, SsLogger::Format fmt, Args... args) {
+    std::string message = format(fmt, args...);
+    log(level, std::string(message));
+    return message;
 }
 
 // format parameters and output it
