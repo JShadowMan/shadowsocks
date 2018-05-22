@@ -29,6 +29,10 @@
 #include <sys/socket.h>
 #include <sys/epoll.h>
 #include <poll.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <fcntl.h>
 
 
 #elif __windows__
@@ -48,8 +52,8 @@
 #define SELECTOR_EVENT_IN               POLLIN
 #define SELECTOR_EVENT_OUT              POLLOUT
 
-#define SELECTOR_VALUE_INIT(_S)         { .fd = (_S), .events = 0 }
-#define SELECTOR_VALUE_ADD(_V, _E)      (_V).events |= (_E)
+#define SELECTOR_VALUE_INIT(SOCKET)     { .fd = (SOCKET), .events = 0 }
+#define SELECTOR_VALUE_ADD(VAL, E)      (VAL).events |= (E)
 
 
 #elif __windows__
@@ -59,8 +63,8 @@
 #define SELECTOR_EVENT_IN               1
 #define SELECTOR_EVENT_OUT              2
 
-#define SELECTOR_VALUE_INIT(_S)         (0)
-#define SELECTOR_VALUE_ADD(_V, _E)      (_V) |= (_E)
+#define SELECTOR_VALUE_INIT(SOCKET)     (0)
+#define SELECTOR_VALUE_ADD(VAL, E)      (VAL) |= (E)
 
 
 #endif
@@ -91,13 +95,20 @@
 #define OPERATOR_FAILURE                (-1)
 
 
-// socket error flag
+// invalid socket flag
 #ifndef INVALID_SOCKET
 #define INVALID_SOCKET                  OPERATOR_FAILURE
 
 
 #endif
 
+
+// socket error flag
+#ifndef SOCKET_ERROR
+#define SOCKET_ERROR                    OPERATOR_FAILURE
+
+
+#endif
 
 // session error flags
 #ifdef __linux__
@@ -115,7 +126,11 @@
 
 // network
 using NetworkHost                       = const char *;
-using NetworkPort                       = short;
+using NetworkPort                       = int;
+
+
+// socket
+#define SOCKET_LISTEN_BACKLOG           (16)
 
 
 #endif // __SHADOWSOCKS_TYPES_INCLUDED__

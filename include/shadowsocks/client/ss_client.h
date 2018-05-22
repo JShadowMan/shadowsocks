@@ -21,11 +21,14 @@ class SsClient {
         static bool hasDaemon();
 
     public:
-        void start();
+        void startEventLoop();
 
     private:
         SsTcpRelay _tcpRelay;
         SsUdpRelay _udpRelay;
+
+        NetworkHost _host;
+        NetworkPort _port;
 };
 
 

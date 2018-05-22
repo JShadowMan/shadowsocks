@@ -12,8 +12,11 @@
  *
  */
 class SsUdpRelay {
+    public:
+        void startProxy(NetworkHost host, NetworkPort port);
+
     private:
-        SsUdpNetwork _relay;
+        SsUdpNetwork _proxy;
 };
 
 

@@ -18,9 +18,9 @@ class SsNetwork {
         };
 
         enum class NetworkType : uint8_t {
-            NT_RAW = 0x00,
-            NT_TCP = 0x01,
-            NT_UDP = 0x02
+            NT_RAW = SOCK_RAW,
+            NT_TCP = SOCK_STREAM,
+            NT_UDP = SOCK_DGRAM
         };
 
     private:
@@ -37,16 +37,17 @@ class SsNetwork {
         bool listen(NetworkHost host, NetworkPort port);
         bool connect(NetworkHost host, NetworkPort port);
 
+        inline SOCKET getSocket() const {
+            return _socket;
+        }
+
     protected:
         virtual bool doListen(NetworkHost host, NetworkPort port) = 0;
         virtual bool doConnect(NetworkHost host, NetworkPort port) = 0;
 
+        bool setSocketOpts() const;
+        bool setNonBlocking() const;
         static sockaddr_storage socketAddr(NetworkHost host, NetworkPort port);
-
-    protected:
-        inline SOCKET getSocket() const {
-            return _socket;
-        }
 
     private:
         void createSocket();
@@ -58,6 +59,7 @@ class SsNetwork {
         NetworkState _state;
 
     friend std::ostream &operator<<(std::ostream &out, NetworkState state);
+    friend std::ostream &operator<<(std::ostream &out, SsNetwork *network);
 };
 
 
@@ -80,6 +82,7 @@ class SsNetwork {
 
 
 /* utility methods */
+std::ostream &operator<<(std::ostream &out, SsNetwork *network);
 std::ostream &operator<<(std::ostream &out, SsNetwork::NetworkFamily family);
 std::ostream &operator<<(std::ostream &out, SsNetwork::NetworkType type);
 

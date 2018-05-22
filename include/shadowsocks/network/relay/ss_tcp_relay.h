@@ -12,8 +12,11 @@
  *
  */
 class SsTcpRelay {
+    public:
+        void startProxy(NetworkHost host, NetworkPort port);
+
     private:
-        SsTcpNetwork _relay;
+        SsTcpNetwork _proxy;
 };
 
 

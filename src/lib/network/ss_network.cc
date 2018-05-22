@@ -5,39 +5,46 @@
 // SsNetwork constructor
 SsNetwork::SsNetwork(NetworkFamily family, NetworkType type) :
     _family(family), _type(type), _state(NetworkState::NS_NONE) {
-    SsLogger::debug("create network with family = %s, type = %s", family, type);
-    createSocket();
+    SsLogger::debug("network created with family = %s, type = %s",
+                    family, type);
 }
 
 // on a two-tuple listening
 bool SsNetwork::listen(NetworkHost host, NetworkPort port) {
-    SsLogger::debug("network = %d, listening on %s:%d", _socket, host, port);
     if (_state != NetworkState::NS_NONE) {
         SsLogger::error("network cannot from %s state change to %s state",
                         _state, NetworkState::NS_LISTEN);
     }
     _state = NetworkState::NS_LISTEN;
-    SsLogger::verbose("network = %d, change state to %s", _state);
+    SsLogger::verbose("%s has changed state to %s", this, _state);
 
-    return doListen(host, port);
+    createSocket();
+    if (!doListen(host, port)) {
+        SsLogger::emergency("%s listening on %s:%d error", this, host, port);
+    }
+    SsLogger::info("%s listening on %s:%d", this, host, port);
+
+    return true;
 }
 
 // connect an host
 bool SsNetwork::connect(NetworkHost host, NetworkPort port) {
-    SsLogger::debug("network = %d, connecting to %s:%d", _socket, host, port);
     if (_state != NetworkState::NS_NONE) {
-        SsLogger::error("network cannot from %s state change to %s state",
-                        _state, NetworkState::NS_CONNECT);
+        SsLogger::emergency("network cannot from %s state change to %s state",
+                            _state, NetworkState::NS_CONNECT);
     }
     _state = NetworkState::NS_CONNECT;
-    SsLogger::verbose("network = %d, change state to %s", _state);
+    SsLogger::verbose("%s, change state to %s", this, _state);
+
+    createSocket();
+    SsLogger::debug("%s, connecting to %s:%d", this, host, port);
 
     return doConnect(host, port);
 }
 
 // create socket
 void SsNetwork::createSocket() {
-    _socket = socket(static_cast<int>(_family), static_cast<int>(_type), 0);
+    _socket = ::socket(static_cast<int>(_family), static_cast<int>(_type), 0);
     if (_socket == INVALID_SOCKET) {
         SsLogger::error("create socket error, errno = %d", errno);
     }
@@ -50,13 +57,13 @@ sockaddr_storage SsNetwork::socketAddr(NetworkHost host, NetworkPort port) {
         sockaddr_storage ss;
         sockaddr_in s4;
         sockaddr_in6 s6;
-    } socketAddr{};
+    } socketAddr{0};
 
     hostent *he = gethostbyname(host);
     if (he == nullptr) {
         SsLogger::emergency("cannot resolve hostname = %s", host);
     } else {
-        if (he->h_addrtype == (int) NetworkFamily::NF_INET_4) {
+        if (he->h_addrtype == (short) NetworkFamily::NF_INET_4) {
             socketAddr.s4.sin_family = he->h_addrtype;
             std::memcpy(&socketAddr.s4.sin_addr, he->h_addr_list[0],
                         static_cast<size_t>(he->h_length));
@@ -105,4 +112,47 @@ std::ostream &operator<<(std::ostream &out, SsNetwork::NetworkState state) {
     }
 
     return out;
+}
+
+// print network
+std::ostream &operator<<(std::ostream &out, SsNetwork *network) {
+    out  << "SsNetwork["
+        << "family=" << network->_family << ","
+        << "type=" << network->_type << ","
+        << "socket=" << network->_socket << ","
+        << "state=" << network->_state
+        << "]";
+
+    return out;
+}
+
+// change some opts for socket
+bool SsNetwork::setSocketOpts() const {
+    int flag = 1;
+
+    SsLogger::verbose("open SO_REUSEADDR flag for  socket = ", _socket);
+    return setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, (char*)&flag,
+                      sizeof(flag)) == OPERATOR_SUCCESS;
+}
+
+// enable non-blocking
+bool SsNetwork::setNonBlocking() const {
+#ifdef __linux__
+    int flags = fcntl(getSocket(), F_GETFL, 0);
+    if (fcntl(getSocket(), F_SETFL, flags | O_NONBLOCK) != OPERATOR_SUCCESS) {
+        return false;
+    }
+
+
+#elif __windows__
+    u_long openFlag = 1L;
+    if (ioctlsocket(_socket, FIONBIO, &openFlag) != OPERATOR_SUCCESS) {
+        return false;
+    }
+
+
+#endif
+
+    SsLogger::verbose("toggle non-blocking for socket = %d", _socket);
+    return true;
 }

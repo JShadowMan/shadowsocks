@@ -152,6 +152,7 @@ void SsLogger::error(SsLogger::Format fmt, Args... args) {
 template<typename ...Args>
 void SsLogger::emergency(SsLogger::Format fmt, Args... args) {
     log(LoggerLevel::LL_EMERGENCY, format(fmt, args...));
+    std::exit(OPERATOR_FAILURE);
 }
 
 // custom log message and return message
@@ -159,7 +160,12 @@ template<typename ...Args>
 std::string
 SsLogger::log(SsLogger::LoggerLevel level, SsLogger::Format fmt, Args... args) {
     std::string message = format(fmt, args...);
+
     log(level, std::string(message));
+    if (level == SsLogger::LoggerLevel::LL_EMERGENCY) {
+        std::exit(OPERATOR_FAILURE);
+    }
+
     return message;
 }
 

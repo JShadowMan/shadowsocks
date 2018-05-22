@@ -11,7 +11,7 @@ int main(int argc, char *argv[]) {
 
     auto client = std::make_shared<SsClient>("0.0.0.0", 9980);
     if (!SsClient::hasDaemon()) {
-        client->start();
+        client->startEventLoop();
     }
 
     return 0;
