@@ -18,8 +18,8 @@ class SsSelectorCallbackInterface;
 class SsSelector {
     public:
         enum class SelectorEvent: int8_t {
-                SE_READABLE = SELECTOR_EVENT_IN,
-                SE_WRITABLE = SELECTOR_EVENT_OUT
+            SE_READABLE = SELECTOR_EVENT_IN,
+            SE_WRITABLE = SELECTOR_EVENT_OUT
         };
 
         using SelectorCallback = std::function<
@@ -47,7 +47,7 @@ class SsSelector {
     private:
         static bool _eventLoopRunning;
         static std::map<SELECTOR_KEY, SELECTOR_VALUE> _sockets;
-        static std::map<SELECTOR_KEY, SelectorCallback> _callbacks;
+        static std::map<SELECTOR_KEY, SsSelectorCallbackInterface*> _callbacks;
 };
 
 

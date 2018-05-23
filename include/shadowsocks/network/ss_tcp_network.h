@@ -15,15 +15,15 @@ class SsTcpNetwork : public SsNetwork {
     public:
         explicit SsTcpNetwork(NetworkFamily family = NetworkFamily::NF_INET_4);
 
-    public:
-        void selectorCallback(SsSelector::SelectorEvent event) final;
-
     protected:
         bool doListen(NetworkHost host, NetworkPort port) final;
         bool doConnect(NetworkHost host, NetworkPort port) final;
+        void readableHandler() final;
+        void writableHandler() final;
 
     private:
         bool bind(NetworkHost host, NetworkPort port) const;
+        void acceptNewConnection();
 };
 
 

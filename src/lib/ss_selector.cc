@@ -4,7 +4,7 @@
 // static members initializing
 bool SsSelector::_eventLoopRunning = false;
 std::map<SELECTOR_KEY, SELECTOR_VALUE> SsSelector::_sockets{};
-std::map<SELECTOR_KEY, SsSelector::SelectorCallback> SsSelector::_callbacks{};
+std::map<SELECTOR_KEY, SsSelectorCallbackInterface*> SsSelector::_callbacks{};
 
 
 // poll all socket descriptor
@@ -67,11 +67,11 @@ SsSelector::SelectorResult SsSelector::doPoll() {
 
             if (fds[index].revents != 0) {
                 if (fds[index].revents & SELECTOR_EVENT_IN) {
-                    _callbacks[fd] (SelectorEvent::SE_READABLE);
+                    _callbacks[fd]->selectorCallback(SelectorEvent::SE_READABLE);
                 }
 
                 if (fds[index].revents & SELECTOR_EVENT_OUT) {
-                    _callbacks[fd] (SelectorEvent::SE_WRITABLE);
+                    _callbacks[fd]->selectorCallback(SelectorEvent::SE_WRITABLE);
                 }
 
                 --total;
@@ -129,12 +129,12 @@ SsSelector::SelectorResult SsSelector::doPoll() {
 
         if (FD_ISSET(fd, &readable)) {
             --total;
-            _callbacks[fd] (SelectorEvent::SE_READABLE);
+            _callbacks[fd]->selectorCallback(SelectorEvent::SE_READABLE);
         }
 
         if (FD_ISSET(fd, &writable)) {
             --total;
-            _callbacks[fd] (SelectorEvent::SE_WRITABLE);
+            _callbacks[fd]->selectorCallback(SelectorEvent::SE_WRITABLE);
         }
     }
 
@@ -153,8 +153,7 @@ void SsSelector::select(SsSelectorCallbackInterface &cb,
     }
 
     _sockets[fd] = SELECTOR_VALUE_INIT(fd);
-    _callbacks[fd] = std::bind(&SsSelectorCallbackInterface::selectorCallback,
-                               cb, std::placeholders::_1);
+    _callbacks[fd] = &cb;
 
     for (auto event : events) {
         SELECTOR_VALUE_ADD(_sockets[fd], static_cast<int>(event));

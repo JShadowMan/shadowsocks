@@ -39,6 +39,12 @@ bool SsUdpNetwork::bind(NetworkHost host, NetworkPort port) {
     return ::bind(getSocket(), bindAddr, sizeof(addr)) != SOCKET_ERROR;
 }
 
-// selector callback
-void SsUdpNetwork::selectorCallback(SsSelector::SelectorEvent event) {
+// readable handler
+void SsUdpNetwork::readableHandler() {
 }
+
+// writable handler
+void SsUdpNetwork::writableHandler() {
+
+}
+

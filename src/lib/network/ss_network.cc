@@ -161,3 +161,11 @@ bool SsNetwork::setNonBlocking() const {
     SsLogger::verbose("toggle non-blocking for socket = %d", _socket);
     return true;
 }
+
+// selector callback
+void SsNetwork::selectorCallback(SsSelector::SelectorEvent event) {
+    switch (event) {
+        case SsSelector::SelectorEvent::SE_READABLE: readableHandler(); break;
+        case SsSelector::SelectorEvent::SE_WRITABLE: writableHandler(); break;
+    }
+}

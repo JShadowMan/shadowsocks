@@ -36,9 +36,36 @@ bool SsTcpNetwork::bind(NetworkHost host, NetworkPort port) const {
     }
 
     SsLogger::debug("tcp socket = %d bind to %s:%d", getSocket(), host, port);
-    return ::bind(getSocket(), bindAddr, sizeof(addr)) != SOCKET_ERROR;
+    return ::bind(getSocket(), bindAddr, sizeof(addr)) != OPERATOR_FAILURE;
 }
 
-// selector callback
-void SsTcpNetwork::selectorCallback(SsSelector::SelectorEvent event) {
+// readable handler
+void SsTcpNetwork::readableHandler() {
+    if (getState() == NetworkState::NS_LISTEN) {
+        return acceptNewConnection();
+    }
+}
+
+// writable handler
+void SsTcpNetwork::writableHandler() {
+
+}
+
+// from server network accept new client
+void SsTcpNetwork::acceptNewConnection() {
+    sockaddr_storage ss = {0};
+#ifdef __linux__
+    socklen_t ssLength = sizeof(ss);
+#elif __windows__
+    int ssLength = sizeof(ss);
+#endif
+
+    auto server = getSocket();
+    SOCKET remote = ::accept(server, (struct sockaddr*) &ss, &ssLength);
+    if (remote == INVALID_SOCKET) {
+        SsLogger::error("invalid client socket from server = %d", server);
+    }
+
+    SsLogger::debug("accept new socket = %d from server = %d", remote, server);
+    CLOSE_SOCKET(remote);
 }

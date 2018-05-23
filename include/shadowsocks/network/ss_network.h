@@ -24,7 +24,7 @@ class SsNetwork : SsSelectorCallbackInterface {
             NT_UDP = SOCK_DGRAM
         };
 
-    private:
+    protected:
         enum class NetworkState : uint8_t {
             NS_NONE = 0x00,
             NS_LISTEN = 0x01,
@@ -42,12 +42,22 @@ class SsNetwork : SsSelectorCallbackInterface {
             return _socket;
         }
 
+        void selectorCallback(SsSelector::SelectorEvent event) final;
+
     protected:
         virtual bool doListen(NetworkHost host, NetworkPort port) = 0;
         virtual bool doConnect(NetworkHost host, NetworkPort port) = 0;
 
+        virtual void readableHandler() = 0;
+        virtual void writableHandler() = 0;
+
         bool setSocketOpts() const;
         bool setNonBlocking() const;
+
+        inline NetworkState getState() const {
+            return _state;
+        }
+
         static sockaddr_storage socketAddr(NetworkHost host, NetworkPort port);
 
     private:
