@@ -24,6 +24,7 @@ bool SsNetwork::listen(NetworkHost host, NetworkPort port) {
     }
     SsLogger::info("%s listening on %s:%d", this, host, port);
 
+    SsSelector::select(*this, {SsSelector::SelectorEvent::SE_READABLE});
     return true;
 }
 
@@ -37,9 +38,13 @@ bool SsNetwork::connect(NetworkHost host, NetworkPort port) {
     SsLogger::verbose("%s, change state to %s", this, _state);
 
     createSocket();
+    if (!doConnect(host, port)) {
+        SsLogger::emergency("%s listening on %s:%d error", this, host, port);
+    }
     SsLogger::debug("%s, connecting to %s:%d", this, host, port);
 
-    return doConnect(host, port);
+    SsSelector::select(*this, {SsSelector::SelectorEvent::SE_READABLE});
+    return true;
 }
 
 // create socket

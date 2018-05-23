@@ -38,3 +38,7 @@ bool SsUdpNetwork::bind(NetworkHost host, NetworkPort port) {
     SsLogger::debug("udp socket = %d bind to %s:%d", getSocket(), host, port);
     return ::bind(getSocket(), bindAddr, sizeof(addr)) != SOCKET_ERROR;
 }
+
+// selector callback
+void SsUdpNetwork::selectorCallback(SsSelector::SelectorEvent event) {
+}

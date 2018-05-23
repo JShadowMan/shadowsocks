@@ -44,6 +44,11 @@
 #endif
 
 
+// socket
+#define SOCKET_LISTEN_BACKLOG           (16)
+#define SELECTOR_POLL_TIMEOUT           (10)
+
+
 // platform types alias and definitions
 #ifdef __linux__
 #define SOCKET                          int
@@ -127,10 +132,6 @@
 // network
 using NetworkHost                       = const char *;
 using NetworkPort                       = int;
-
-
-// socket
-#define SOCKET_LISTEN_BACKLOG           (16)
 
 
 #endif // __SHADOWSOCKS_TYPES_INCLUDED__

@@ -19,6 +19,10 @@ class SsUdpNetwork : public SsNetwork {
         bool doListen(NetworkHost host, NetworkPort port) final;
         bool doConnect(NetworkHost host, NetworkPort port) final;
 
+    public:
+        void selectorCallback(SsSelector::SelectorEvent event) final;
+
+
     private:
         bool bind(NetworkHost host, NetworkPort port);
 };

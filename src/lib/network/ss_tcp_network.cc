@@ -38,3 +38,7 @@ bool SsTcpNetwork::bind(NetworkHost host, NetworkPort port) const {
     SsLogger::debug("tcp socket = %d bind to %s:%d", getSocket(), host, port);
     return ::bind(getSocket(), bindAddr, sizeof(addr)) != SOCKET_ERROR;
 }
+
+// selector callback
+void SsTcpNetwork::selectorCallback(SsSelector::SelectorEvent event) {
+}

@@ -3,6 +3,7 @@
 
 #include "shadowsocks/ss_types.h"
 #include "shadowsocks/ss_core.h"
+#include "shadowsocks/ss_selector.h"
 
 
 /**
@@ -10,7 +11,7 @@
  *
  *
  */
-class SsNetwork {
+class SsNetwork : SsSelectorCallbackInterface {
     public:
         enum class NetworkFamily : uint8_t {
             NF_INET_4 = AF_INET,
@@ -37,7 +38,7 @@ class SsNetwork {
         bool listen(NetworkHost host, NetworkPort port);
         bool connect(NetworkHost host, NetworkPort port);
 
-        inline SOCKET getSocket() const {
+        inline SOCKET getSocket() const final {
             return _socket;
         }
 

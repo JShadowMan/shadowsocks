@@ -3,6 +3,7 @@
 
 
 #include "shadowsocks/ss_types.h"
+#include "shadowsocks/ss_logger.h"
 
 
 /* class pre-declared */
@@ -22,25 +23,31 @@ class SsSelector {
         };
 
         using SelectorCallback = std::function<
-            void(SOCKET, SsSelector::SelectorEvent)
+            void(SsSelector::SelectorEvent)
         >;
 
         using SelectorEvents = std::initializer_list<SelectorEvent>;
 
-    public:
-        SsSelector() = default;
+    private:
+        enum class SelectorResult : uint8_t {
+            SR_TIMEOUT = 0xff,
+            SR_SUCCESS = 0x00,
+            SR_FAILURE = 0x01
+        };
 
     public:
         static void startEventLoop();
         static void select(SsSelectorCallbackInterface &cb,
                            SelectorEvents events);
-
-    public:
-        void doPoll();
+        static void stopEventLoop();
 
     private:
-        static std::shared_ptr<SsSelector> _instance;
-        std::map<SELECTOR_KEY, SELECTOR_VALUE> _sockets;
+        static SelectorResult doPoll();
+
+    private:
+        static bool _eventLoopRunning;
+        static std::map<SELECTOR_KEY, SELECTOR_VALUE> _sockets;
+        static std::map<SELECTOR_KEY, SelectorCallback> _callbacks;
 };
 
 
@@ -51,7 +58,13 @@ class SsSelector {
  */
 class SsSelectorCallbackInterface {
     public:
-        virtual void selectorCallback(SsSelector::SelectorEvent event) = 0;
+        virtual SOCKET getSocket() const {
+            return 0;
+        }
+
+        virtual void selectorCallback(SsSelector::SelectorEvent event) {
+            SsLogger::emergency("not implement selectorCallback method");
+        }
 };
 
 
