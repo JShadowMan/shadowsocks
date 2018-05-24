@@ -22,9 +22,7 @@ class SsSelector {
             SE_WRITABLE = SELECTOR_EVENT_OUT
         };
 
-        using SelectorCallback = std::function<
-            void(SsSelector::SelectorEvent)
-        >;
+        using CallbackInterPtr = std::shared_ptr<SsSelectorCallbackInterface>;
 
         using SelectorEvents = std::initializer_list<SelectorEvent>;
 
@@ -39,6 +37,7 @@ class SsSelector {
         static void startEventLoop();
         static void select(SsSelectorCallbackInterface &cb,
                            SelectorEvents events);
+        static void remove(SOCKET fd);
         static void stopEventLoop();
 
     private:
@@ -46,8 +45,8 @@ class SsSelector {
 
     private:
         static bool _eventLoopRunning;
-        static std::map<SELECTOR_KEY, SELECTOR_VALUE> _sockets;
-        static std::map<SELECTOR_KEY, SsSelectorCallbackInterface*> _callbacks;
+        static std::map<SELECTOR_KEY, SELECTOR_VALUE> _events;
+        static std::map<SELECTOR_KEY, CallbackInterPtr> _callbacks;
 };
 
 
@@ -67,6 +66,16 @@ class SsSelectorCallbackInterface {
         }
 };
 
+
+/**
+ * Exception: SsNetworkClosed
+ *
+ *
+ */
+struct SsNetworkClosed : public std::exception {
+    explicit SsNetworkClosed(SOCKET fd) : fd(fd) {}
+    SOCKET fd;
+};
 
 
 #endif // __SHADOWSOCKS_SELECTOR_INCLUDED__

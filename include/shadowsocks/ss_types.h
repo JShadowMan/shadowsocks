@@ -7,6 +7,7 @@
 #include <list>
 #include <ctime>
 #include <tuple>
+#include <cstdio>
 #include <memory>
 #include <cassert>
 #include <csignal>
@@ -136,6 +137,10 @@
 // network
 using NetworkHost                       = const char *;
 using NetworkPort                       = int;
+
+
+// buffer
+#define BUFFER_BLOCK_SIZE               (4 * 1024)
 
 
 #endif // __SHADOWSOCKS_TYPES_INCLUDED__

@@ -3,8 +3,8 @@
 
 // static members initializing
 bool SsSelector::_eventLoopRunning = false;
-std::map<SELECTOR_KEY, SELECTOR_VALUE> SsSelector::_sockets{};
-std::map<SELECTOR_KEY, SsSelectorCallbackInterface*> SsSelector::_callbacks{};
+std::map<SELECTOR_KEY, SELECTOR_VALUE> SsSelector::_events{};
+std::map<SELECTOR_KEY, SsSelector::CallbackInterPtr> SsSelector::_callbacks{};
 
 
 // poll all socket descriptor
@@ -23,7 +23,15 @@ void SsSelector::startEventLoop() {
     _eventLoopRunning = true;
     SsLogger::info("event loop started");
     while (_eventLoopRunning) {
-        switch (doPoll()) {
+        SelectorResult result;
+        try {
+            result = doPoll();
+        } catch (SsNetworkClosed &e) {
+            remove(e.fd);
+            result = SelectorResult::SR_SUCCESS;
+        }
+
+        switch (result) {
             case SelectorResult::SR_TIMEOUT: {
                 SsLogger::debug("timeout for %d sec", SELECTOR_POLL_TIMEOUT);
                 break;
@@ -45,8 +53,8 @@ SsSelector::SelectorResult SsSelector::doPoll() {
     static pollfd fds[64] = {0};
 
     int index = 0;
-    for (auto &s : _sockets) {
-        fds[index++] = s.second;
+    for (auto &pair : _events) {
+        fds[index++] = pair.second;
     }
 
     int total = ::poll(fds, _sockets.size(), SELECTOR_POLL_TIMEOUT * 1000);
@@ -57,7 +65,7 @@ SsSelector::SelectorResult SsSelector::doPoll() {
     if (total == 0) {
         return SelectorResult::SR_TIMEOUT;
     } else {
-        int size = _sockets.size();
+        int size = _events.size();
         for (index = 0; index < size && total > 0; index++) {
             auto fd = fds[index].fd;
             if (_callbacks.find(fd) == _callbacks.end()) {
@@ -92,7 +100,7 @@ SsSelector::SelectorResult SsSelector::doPoll() {
     FD_ZERO(&readable);
     FD_ZERO(&writable);
 
-    for (auto &pair : _sockets) {
+    for (auto &pair : _events) {
         // select cannot use to non-socket in windows
         auto fd = pair.first;
         if (fd == STDIN_FILENO || fd == STDOUT_FILENO || fd == STDERR_FILENO) {
@@ -116,7 +124,7 @@ SsSelector::SelectorResult SsSelector::doPoll() {
         return SelectorResult::SR_TIMEOUT;
     }
 
-    for (auto &pair : _sockets) {
+    for (auto &pair : _events) {
         if (total <= 0) {
             break;
         }
@@ -148,15 +156,15 @@ SsSelector::SelectorResult SsSelector::doPoll() {
 void SsSelector::select(SsSelectorCallbackInterface &cb,
                         SsSelector::SelectorEvents events) {
     auto fd = cb.getSocket();
-    if (_sockets.find(fd) != _sockets.end()) {
+    if (_events.find(fd) != _events.end()) {
         SsLogger::warning("duplicate register callback for socket = %d", fd);
     }
 
-    _sockets[fd] = SELECTOR_VALUE_INIT(fd);
-    _callbacks[fd] = &cb;
+    _events[fd] = SELECTOR_VALUE_INIT(fd);
+    _callbacks[fd].reset(&cb);
 
     for (auto event : events) {
-        SELECTOR_VALUE_ADD(_sockets[fd], static_cast<int>(event));
+        SELECTOR_VALUE_ADD(_events[fd], static_cast<int>(event));
     }
 
     SsLogger::debug("callback registered for socket = %d", fd);
@@ -166,4 +174,11 @@ void SsSelector::select(SsSelectorCallbackInterface &cb,
 void SsSelector::stopEventLoop() {
     _eventLoopRunning = false;
     SsLogger::debug("event loop has suspend");
+}
+
+// stop select for socket
+void SsSelector::remove(SOCKET fd) {
+    _events.erase(fd);
+    SsLogger::debug("count = %d", _callbacks[fd].use_count());
+    _callbacks.erase(fd);
 }

@@ -9,6 +9,24 @@ SsNetwork::SsNetwork(NetworkFamily family, NetworkType type) :
                     family, type);
 }
 
+// SsNetwork inter constructor
+SsNetwork::SsNetwork(SOCKET fd, sockaddr_storage &ss) :
+    _socket(fd), _family(NetworkFamily::NF_INET_4), _type(NetworkType::NT_TCP),
+    _state(NetworkState::NS_CONNECT) {
+    if (ss.ss_family == static_cast<int>(NetworkFamily::NF_INET_6)) {
+        _family = NetworkFamily::NF_INET_6;
+    }
+
+    SsLogger::debug("network created with family = %s, type = %s from "
+                    "socket = %d", _family, _type, _socket);
+}
+
+// SsNetwork destructor
+SsNetwork::~SsNetwork() {
+    CLOSE_SOCKET(getSocket());
+    SsLogger::debug("%s destroy", this);
+}
+
 // on a two-tuple listening
 bool SsNetwork::listen(NetworkHost host, NetworkPort port) {
     if (_state != NetworkState::NS_NONE) {

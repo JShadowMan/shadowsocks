@@ -15,6 +15,9 @@ class SsTcpNetwork : public SsNetwork {
     public:
         explicit SsTcpNetwork(NetworkFamily family = NetworkFamily::NF_INET_4);
 
+    private:
+        SsTcpNetwork(SOCKET fd, sockaddr_storage &ss);
+
     protected:
         bool doListen(NetworkHost host, NetworkPort port) final;
         bool doConnect(NetworkHost host, NetworkPort port) final;
@@ -24,6 +27,8 @@ class SsTcpNetwork : public SsNetwork {
     private:
         bool bind(NetworkHost host, NetworkPort port) const;
         void acceptNewConnection();
+        void receiveDate();
+        void receiveErrorDetect();
 };
 
 

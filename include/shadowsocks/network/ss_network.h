@@ -11,7 +11,7 @@
  *
  *
  */
-class SsNetwork : SsSelectorCallbackInterface {
+class SsNetwork : public SsSelectorCallbackInterface {
     public:
         enum class NetworkFamily : uint8_t {
             NF_INET_4 = AF_INET,
@@ -33,6 +33,10 @@ class SsNetwork : SsSelectorCallbackInterface {
 
     public:
         SsNetwork(NetworkFamily family, NetworkType type);
+        virtual ~SsNetwork();
+
+    protected:
+        SsNetwork(SOCKET fd, sockaddr_storage &ss);
 
     public:
         bool listen(NetworkHost host, NetworkPort port);
@@ -53,6 +57,8 @@ class SsNetwork : SsSelectorCallbackInterface {
 
         bool setSocketOpts() const;
         bool setNonBlocking() const;
+        void addConnectionSocket(SsNetwork *network);
+        void removeConnectionSocket(SOCKET fd);
 
         inline NetworkState getState() const {
             return _state;
@@ -89,7 +95,6 @@ class SsNetwork : SsSelectorCallbackInterface {
  *
  */
 //SHADOWSOCKS_EXCEPTION(SocketStateError);
-
 
 
 /* utility methods */
