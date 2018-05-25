@@ -24,6 +24,7 @@ bool SsTcpNetwork::doListen(NetworkHost host, NetworkPort port) {
 
 // do connect for tcp network
 bool SsTcpNetwork::doConnect(NetworkHost host, NetworkPort port) {
+    SsLogger::debug("connecting to %s:%d", host, port);
     return false;
 }
 
@@ -55,7 +56,6 @@ void SsTcpNetwork::readableHandler() {
 
 // writable handler
 void SsTcpNetwork::writableHandler() {
-
 }
 
 // from server network accept new client
@@ -98,22 +98,24 @@ void SsTcpNetwork::acceptNewConnection() {
 
 // receive data from network
 void SsTcpNetwork::receiveDate() {
-    auto buffer = new char[BUFFER_BLOCK_SIZE];
+    static char buffer[1024] = {0};
     int receiveCount = 0;
 
     receiveCount = ::recv(getSocket(), buffer, BUFFER_BLOCK_SIZE, 0);
     if (receiveCount == 0) {
-        throw SsNetworkClosed(getSocket());
+        throw SsNetworkClosed();
     } else if (receiveCount == OPERATOR_FAILURE) {
-        receiveErrorDetect();
+        try {
+            receiveErrorDetect();
+        } catch (SsNetworkClosed &e) {
+            __throw_exception_again;
+        }
     } else {
         //// test case
         for (auto i = 0; i < receiveCount; ++i) {
             std::printf("0x%02x%c", buffer[i], i == receiveCount - 1 ? '\n' : ' ');
         }
     }
-
-    delete[] buffer;
 }
 
 // detect error in receive data
@@ -121,10 +123,9 @@ void SsTcpNetwork::receiveErrorDetect() {
 #ifdef __windows__
     switch (WSAGetLastError()) {
         case CONNECTION_RESET_BY_PEER:
-            throw SsNetworkClosed(getSocket());
+            throw SsNetworkClosed();
         default: {
-            SsLogger::emergency("receive data from socket = %d error",
-                                getSocket());
+            SsLogger::emergency("receive data error");
         }
     }
 

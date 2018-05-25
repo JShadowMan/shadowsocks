@@ -4,7 +4,9 @@
 // static members initializing
 bool SsSelector::_eventLoopRunning = false;
 std::map<SELECTOR_KEY, SELECTOR_VALUE> SsSelector::_events{};
-std::map<SELECTOR_KEY, SsSelector::CallbackInterPtr> SsSelector::_callbacks{};
+std::map<
+    SELECTOR_KEY, std::shared_ptr<SsSelectorCallbackInterface>
+> SsSelector::_callbacks{};
 
 
 // poll all socket descriptor
@@ -23,15 +25,7 @@ void SsSelector::startEventLoop() {
     _eventLoopRunning = true;
     SsLogger::info("event loop started");
     while (_eventLoopRunning) {
-        SelectorResult result;
-        try {
-            result = doPoll();
-        } catch (SsNetworkClosed &e) {
-            remove(e.fd);
-            result = SelectorResult::SR_SUCCESS;
-        }
-
-        switch (result) {
+        switch (triggerHandler(poll())) {
             case SelectorResult::SR_TIMEOUT: {
                 SsLogger::debug("timeout for %d sec", SELECTOR_POLL_TIMEOUT);
                 break;
@@ -49,50 +43,35 @@ void SsSelector::startEventLoop() {
 
 // do poll all socket descriptor
 #ifdef __linux__
-SsSelector::SelectorResult SsSelector::doPoll() {
-    static pollfd fds[64] = {0};
+SsSelector::PollCollection SsSelector::poll() {
+    static pollfd fds[FD_SETSIZE] = {0};
 
-    int index = 0;
+    unsigned int index = 0;
     for (auto &pair : _events) {
         fds[index++] = pair.second;
     }
 
-    int total = ::poll(fds, _sockets.size(), SELECTOR_POLL_TIMEOUT * 1000);
+    PollCollection collection(SelectorResult::SR_SUCCESS, {});
+    int total = ::poll(fds, _events.size(), SELECTOR_POLL_TIMEOUT * 1000);
     if (total == OPERATOR_FAILURE) {
-        return SelectorResult::SR_FAILURE;
-    }
-
-    if (total == 0) {
-        return SelectorResult::SR_TIMEOUT;
+        collection.first = SelectorResult::SR_FAILURE;
+    } else if (total == 0) {
+        collection.first = SelectorResult::SR_TIMEOUT;
     } else {
-        int size = _events.size();
-        for (index = 0; index < size && total > 0; index++) {
-            auto fd = fds[index].fd;
-            if (_callbacks.find(fd) == _callbacks.end()) {
-                SsLogger::warning("cannot find callback for socket = %d", fd);
-                continue;
-            }
-
+        for (index = 0; index < _events.size() && total > 0; ++index) {
             if (fds[index].revents != 0) {
-                if (fds[index].revents & SELECTOR_EVENT_IN) {
-                    _callbacks[fd]->selectorCallback(SelectorEvent::SE_READABLE);
-                }
-
-                if (fds[index].revents & SELECTOR_EVENT_OUT) {
-                    _callbacks[fd]->selectorCallback(SelectorEvent::SE_WRITABLE);
-                }
-
+                collection.second[fds[index].fd] = fds[index].revents;
                 --total;
             }
         }
     }
 
-    return SelectorResult::SR_SUCCESS;
+    return collection;
 }
 
 
 #elif __windows__
-SsSelector::SelectorResult SsSelector::doPoll() {
+SsSelector::PollCollection SsSelector::poll() {
     static FD_SET readable = {0};
     static FD_SET writable = {0};
     static timeval timeout{ .tv_sec = SELECTOR_POLL_TIMEOUT };
@@ -116,37 +95,33 @@ SsSelector::SelectorResult SsSelector::doPoll() {
         }
     }
 
+    PollCollection collection(SelectorResult::SR_SUCCESS, {});
     int total = ::select(FD_SETSIZE, &readable, &writable, nullptr, &timeout);
     if (total == SOCKET_ERROR) {
-        return SelectorResult::SR_FAILURE;
-    }
-    if (total == 0) {
-        return SelectorResult::SR_TIMEOUT;
-    }
+        collection.first = SelectorResult::SR_FAILURE;
+    } else if (total == 0) {
+        collection.first = SelectorResult::SR_TIMEOUT;
+    } else {
+        auto hasEvent = false;
+        collection.first = SelectorResult::SR_SUCCESS;
+        for (auto &pair : _events) {
+            if (FD_ISSET(pair.first, &readable)) {
+                hasEvent = true;
+                collection.second[pair.first] |= SELECTOR_EVENT_IN;
+            }
 
-    for (auto &pair : _events) {
-        if (total <= 0) {
-            break;
-        }
+            if (FD_ISSET(pair.first, &writable)) {
+                hasEvent = true;
+                collection.second[pair.first] |= SELECTOR_EVENT_OUT;
+            }
 
-        auto fd = pair.first;
-        if (_callbacks.find(fd) == _callbacks.end()) {
-            SsLogger::warning("cannot find callback for socket = %d", fd);
-            continue;
-        }
-
-        if (FD_ISSET(fd, &readable)) {
-            --total;
-            _callbacks[fd]->selectorCallback(SelectorEvent::SE_READABLE);
-        }
-
-        if (FD_ISSET(fd, &writable)) {
-            --total;
-            _callbacks[fd]->selectorCallback(SelectorEvent::SE_WRITABLE);
+            if (hasEvent && --total == 0) {
+                break;
+            }
         }
     }
 
-    return SelectorResult::SR_SUCCESS;
+    return collection;
 }
 
 
@@ -161,6 +136,7 @@ void SsSelector::select(SsSelectorCallbackInterface &cb,
     }
 
     _events[fd] = SELECTOR_VALUE_INIT(fd);
+    std::cout << (_callbacks[fd] == nullptr) << std::endl;
     _callbacks[fd].reset(&cb);
 
     for (auto event : events) {
@@ -179,6 +155,32 @@ void SsSelector::stopEventLoop() {
 // stop select for socket
 void SsSelector::remove(SOCKET fd) {
     _events.erase(fd);
-    SsLogger::debug("count = %d", _callbacks[fd].use_count());
     _callbacks.erase(fd);
+}
+
+// trigger network callback
+SsSelector::SelectorResult
+SsSelector::triggerHandler(SsSelector::PollCollection collection) {
+    if (collection.first != SelectorResult::SR_SUCCESS) {
+        return collection.first;
+    }
+
+    for (auto &pair : collection.second) {
+        auto &fd = pair.first;
+        auto &events = pair.second;
+
+        if (_callbacks.find(fd) == _callbacks.end()) {
+            SsLogger::warning("cannot find callback for socket = %d", fd);
+            continue;
+        }
+
+        if (events & SELECTOR_EVENT_IN) {
+            _callbacks[fd]->selectorCallback(SelectorEvent::SE_READABLE);
+        }
+        if (events & SELECTOR_EVENT_OUT) {
+            _callbacks[fd]->selectorCallback(SelectorEvent::SE_WRITABLE);
+        }
+    }
+
+    return collection.first;
 }

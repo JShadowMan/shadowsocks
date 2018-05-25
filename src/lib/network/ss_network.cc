@@ -1,5 +1,4 @@
 #include "shadowsocks/network/ss_network.h"
-#include "shadowsocks/ss_logger.h"
 
 
 // SsNetwork constructor
@@ -182,8 +181,14 @@ bool SsNetwork::setNonBlocking() const {
 
 // selector callback
 void SsNetwork::selectorCallback(SsSelector::SelectorEvent event) {
-    switch (event) {
-        case SsSelector::SelectorEvent::SE_READABLE: readableHandler(); break;
-        case SsSelector::SelectorEvent::SE_WRITABLE: writableHandler(); break;
+    try {
+        switch (event) {
+            case SsSelector::SelectorEvent::SE_READABLE: readableHandler();
+                break;
+            case SsSelector::SelectorEvent::SE_WRITABLE: writableHandler();
+                break;
+        }
+    } catch (SsNetworkClosed &e) {
+        SsSelector::remove(getSocket());
     }
 }

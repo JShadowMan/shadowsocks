@@ -21,9 +21,6 @@ class SsSelector {
             SE_READABLE = SELECTOR_EVENT_IN,
             SE_WRITABLE = SELECTOR_EVENT_OUT
         };
-
-        using CallbackInterPtr = std::shared_ptr<SsSelectorCallbackInterface>;
-
         using SelectorEvents = std::initializer_list<SelectorEvent>;
 
     private:
@@ -32,6 +29,7 @@ class SsSelector {
             SR_SUCCESS = 0x00,
             SR_FAILURE = 0x01
         };
+        using PollCollection = std::pair<SelectorResult, std::map<SOCKET, int>>;
 
     public:
         static void startEventLoop();
@@ -41,12 +39,15 @@ class SsSelector {
         static void stopEventLoop();
 
     private:
-        static SelectorResult doPoll();
+        static PollCollection poll();
+        static SelectorResult triggerHandler(PollCollection collection);
 
     private:
         static bool _eventLoopRunning;
         static std::map<SELECTOR_KEY, SELECTOR_VALUE> _events;
-        static std::map<SELECTOR_KEY, CallbackInterPtr> _callbacks;
+        static std::map<
+            SELECTOR_KEY, std::shared_ptr<SsSelectorCallbackInterface>
+        > _callbacks;
 };
 
 
@@ -64,17 +65,6 @@ class SsSelectorCallbackInterface {
         virtual void selectorCallback(SsSelector::SelectorEvent event) {
             SsLogger::emergency("not implement selectorCallback method");
         }
-};
-
-
-/**
- * Exception: SsNetworkClosed
- *
- *
- */
-struct SsNetworkClosed : public std::exception {
-    explicit SsNetworkClosed(SOCKET fd) : fd(fd) {}
-    SOCKET fd;
 };
 
 

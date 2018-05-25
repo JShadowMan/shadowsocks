@@ -3,7 +3,15 @@
 
 
 /* static methods in daemon */
+#ifdef __linux__
 static void signalHandler(int signum);
+
+
+#elif __windows__
+static bool signalHandler(DWORD signum);
+
+
+#endif
 
 
 // shadowsocks header
@@ -72,27 +80,36 @@ void SsCore::shutdownShadowSocks(int state) {
 
 // catch signal
 void SsCore::catchSignal() {
-    if (signal(SIGINT, signalHandler) == SIG_ERR) {
-        SsLogger::emergency("cannot catch SIGINT");
-    }
-    SsLogger::verbose("signal catch SIGINT");
+#ifdef __linux__
+    auto handleSignal = [&] (int signum) {
+        struct sigaction sig;
+        sig.sa_handler = signalHandler;
+        sigemptyset(&sig.sa_mask);
+        sig.sa_flags = 0;
 
-    if (signal(SIGTERM, signalHandler) == SIG_ERR) {
-        SsLogger::emergency("cannot catch SIGTERM");
-    }
-    SsLogger::verbose("signal catch SIGTERM");
+        sigaction(signum, &sig, nullptr);
+        SsLogger::verbose("catch %d by sigaction", signum);
+    };
 
+    handleSignal(SIGINT);
+    handleSignal(SIGTERM);
 #ifdef SIGQUIT
-    if (signal(SIGQUIT, signalHandler) == SIG_ERR) {
-        SsLogger::emergency("cannot catch SIGQUIT");
-    }
-    SsLogger::verbose("signal catch SIGQUIT");
+    handleSignal(SIGQUIT);
 
 
 #endif
 
 
-    SsLogger::debug("register signal handler to catch SIGINT and SIGTERM");
+#elif __windows__
+    if (SetConsoleCtrlHandler((PHANDLER_ROUTINE) signalHandler, true)) {
+        SsLogger::debug("the control handler is installed on windows");
+    }
+
+
+#endif
+
+
+    // catch SIGINT and SIGTERM in linux / windows
 }
 
 // start daemon when debug mode disabled and on posix platform
@@ -110,6 +127,7 @@ void SsCore::startDaemon() {
 
 
 /* static methods definition */
+#ifdef __linux__
 void signalHandler(int signum) {
     SsLogger::debug("receive signal, signum = %d", signum);
 
@@ -127,6 +145,22 @@ void signalHandler(int signum) {
 
     SsCore::shutdownShadowSocks(OPERATOR_FAILURE);
 }
+
+
+#elif __windows__
+bool signalHandler(DWORD signum) {
+    switch (signum) {
+        case CTRL_C_EVENT:
+            SsCore::shutdownShadowSocks(OPERATOR_FAILURE);
+            return true;
+        default:
+            SsLogger::debug("receive signal type = %d", signum);
+            return false;
+    }
+}
+
+
+#endif
 
 
 // ShadowsocksError constructor

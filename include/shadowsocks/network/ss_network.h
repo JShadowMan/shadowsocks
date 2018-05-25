@@ -57,8 +57,6 @@ class SsNetwork : public SsSelectorCallbackInterface {
 
         bool setSocketOpts() const;
         bool setNonBlocking() const;
-        void addConnectionSocket(SsNetwork *network);
-        void removeConnectionSocket(SOCKET fd);
 
         inline NetworkState getState() const {
             return _state;
@@ -97,8 +95,15 @@ class SsNetwork : public SsSelectorCallbackInterface {
 //SHADOWSOCKS_EXCEPTION(SocketStateError);
 
 
+/**
+ * Exception: SsNetworkClosed
+ *
+ *
+ */
+struct SsNetworkClosed : public std::exception {};
+
+
 /* utility methods */
-std::ostream &operator<<(std::ostream &out, SsNetwork *network);
 std::ostream &operator<<(std::ostream &out, SsNetwork::NetworkFamily family);
 std::ostream &operator<<(std::ostream &out, SsNetwork::NetworkType type);
 

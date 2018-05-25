@@ -61,7 +61,7 @@
 #define SELECTOR_VALUE_INIT(SOCKET)     { .fd = (SOCKET), .events = 0 }
 #define SELECTOR_VALUE_ADD(VAL, E)      (VAL).events |= (E)
 
-#define CLOSE_SOCKET(_S)                close((_S))
+#define CLOSE_SOCKET(SOCKET)            close((SOCKET))
 
 
 #elif __windows__
@@ -74,7 +74,7 @@
 #define SELECTOR_VALUE_INIT(SOCKET)     (0)
 #define SELECTOR_VALUE_ADD(VAL, E)      (VAL) |= (E)
 
-#define CLOSE_SOCKET(_S)                closesocket((_S))
+#define CLOSE_SOCKET(SOCKET)            closesocket((SOCKET))
 
 
 #endif
