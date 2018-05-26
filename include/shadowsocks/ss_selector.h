@@ -58,6 +58,8 @@ class SsSelector {
  */
 class SsSelectorCallbackInterface {
     public:
+        virtual ~SsSelectorCallbackInterface() = default;
+
         virtual SOCKET getSocket() const {
             return 0;
         }
