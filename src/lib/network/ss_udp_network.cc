@@ -13,7 +13,6 @@ bool SsUdpNetwork::doListen(NetworkHost host, NetworkPort port) {
                             getSocket(), host, port);
     }
 
-    SsLogger::debug("socket = %d listening to %s:%d", getSocket(), host, port);
     return true;
 }
 

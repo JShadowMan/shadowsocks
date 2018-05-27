@@ -14,9 +14,8 @@
 class SsTcpNetwork : public SsNetwork {
     public:
         explicit SsTcpNetwork(NetworkFamily family = NetworkFamily::NF_INET_4);
-
-    private:
         SsTcpNetwork(SOCKET fd, sockaddr_storage &ss);
+        ~SsTcpNetwork() final = default;
 
     protected:
         bool doListen(NetworkHost host, NetworkPort port) final;

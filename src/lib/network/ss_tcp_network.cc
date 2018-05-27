@@ -18,7 +18,6 @@ bool SsTcpNetwork::doListen(NetworkHost host, NetworkPort port) {
                             getSocket(), host, port);
     }
 
-    SsLogger::debug("socket = %d listening to %s:%d", getSocket(), host, port);
     return ::listen(getSocket(), SOCKET_LISTEN_BACKLOG) != OPERATOR_FAILURE;
 }
 
@@ -92,8 +91,8 @@ void SsTcpNetwork::acceptNewConnection() {
         SsLogger::warning("current unsupported Ipv6 address convert");
     }
 
-    auto network = new SsTcpNetwork(remote, ss);
-    SsSelector::select(*network, {SsSelector::SelectorEvent::SE_READABLE});
+    auto network = std::make_shared<SsTcpNetwork>(remote, ss);
+    SsSelector::select(network, {SsSelector::SelectorEvent::SE_READABLE});
 }
 
 // receive data from network

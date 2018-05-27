@@ -26,7 +26,7 @@ SsNetwork::~SsNetwork() {
     SsLogger::debug("%s destroy", this);
 }
 
-// on a two-tuple listening
+// on a two-tuple listening connection
 bool SsNetwork::listen(NetworkHost host, NetworkPort port) {
     if (_state != NetworkState::NS_NONE) {
         SsLogger::error("network cannot from %s state change to %s state",
@@ -41,11 +41,10 @@ bool SsNetwork::listen(NetworkHost host, NetworkPort port) {
     }
     SsLogger::info("%s listening on %s:%d", this, host, port);
 
-    SsSelector::select(*this, {SsSelector::SelectorEvent::SE_READABLE});
     return true;
 }
 
-// connect an host
+// connecting server
 bool SsNetwork::connect(NetworkHost host, NetworkPort port) {
     if (_state != NetworkState::NS_NONE) {
         SsLogger::emergency("network cannot from %s state change to %s state",
@@ -60,9 +59,9 @@ bool SsNetwork::connect(NetworkHost host, NetworkPort port) {
     }
     SsLogger::debug("%s, connecting to %s:%d", this, host, port);
 
-    SsSelector::select(*this, {SsSelector::SelectorEvent::SE_READABLE});
     return true;
 }
+
 
 // create socket
 void SsNetwork::createSocket() {
@@ -192,3 +191,4 @@ void SsNetwork::selectorCallback(SsSelector::SelectorEvent event) {
         SsSelector::remove(getSocket());
     }
 }
+

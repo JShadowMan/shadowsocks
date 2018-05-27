@@ -2,6 +2,10 @@
 #include "shadowsocks/ss_selector.h"
 
 
+// static members initializing
+std::map<std::string, std::shared_ptr<SsClient>> SsClient::_clients{};
+
+
 // SsClient constructor
 SsClient::SsClient(NetworkHost host, NetworkPort port) :
     _host(host), _port(port) {
@@ -18,4 +22,14 @@ void SsClient::startEventLoop() {
 // check daemon exists
 bool SsClient::hasDaemon() {
     return false;
+}
+
+// create shadowsocks client
+void SsClient::createClient(NetworkHost host, NetworkPort port) {
+    std::string key = host;
+    key += ":" + port;
+
+    if (_clients.find(key) != _clients.end()) {
+        SsLogger::error("duplicate shadowsocks client on %s:%d", host, port);
+    }
 }

@@ -13,10 +13,11 @@
  */
 class SsTcpRelay {
     public:
+        SsTcpRelay();
         void startProxy(NetworkHost host, NetworkPort port);
 
     private:
-        SsTcpNetwork _proxy;
+        std::shared_ptr<SsTcpNetwork> _proxy;
 };
 
 

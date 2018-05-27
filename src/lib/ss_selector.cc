@@ -128,16 +128,15 @@ SsSelector::PollCollection SsSelector::poll() {
 #endif
 
 // register a callback when socket available
-void SsSelector::select(SsSelectorCallbackInterface &cb,
+void SsSelector::select(std::shared_ptr<SsSelectorCallbackInterface> cb,
                         SsSelector::SelectorEvents events) {
-    auto fd = cb.getSocket();
+    auto fd = cb->getSocket();
     if (_events.find(fd) != _events.end()) {
         SsLogger::warning("duplicate register callback for socket = %d", fd);
     }
 
     _events[fd] = SELECTOR_VALUE_INIT(fd);
-    std::cout << (_callbacks[fd] == nullptr) << std::endl;
-    _callbacks[fd].reset(&cb);
+    _callbacks[fd] = cb;
 
     for (auto event : events) {
         SELECTOR_VALUE_ADD(_events[fd], static_cast<int>(event));

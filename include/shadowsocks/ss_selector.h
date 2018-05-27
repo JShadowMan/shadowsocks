@@ -33,7 +33,7 @@ class SsSelector {
 
     public:
         static void startEventLoop();
-        static void select(SsSelectorCallbackInterface &cb,
+        static void select(std::shared_ptr<SsSelectorCallbackInterface> cb,
                            SelectorEvents events);
         static void remove(SOCKET fd);
         static void stopEventLoop();

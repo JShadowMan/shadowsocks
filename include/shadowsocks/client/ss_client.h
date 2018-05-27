@@ -16,6 +16,7 @@
 class SsClient {
     public:
         SsClient(NetworkHost host, NetworkPort port);
+        static void createClient(NetworkHost host, NetworkPort port);
 
     public:
         static bool hasDaemon();
@@ -29,6 +30,8 @@ class SsClient {
 
         NetworkHost _host;
         NetworkPort _port;
+
+        static std::map<std::string, std::shared_ptr<SsClient>> _clients;
 };
 
 

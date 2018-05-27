@@ -13,10 +13,11 @@
  */
 class SsUdpRelay {
     public:
+        explicit SsUdpRelay();
         void startProxy(NetworkHost host, NetworkPort port);
 
     private:
-        SsUdpNetwork _proxy;
+        std::shared_ptr<SsUdpNetwork> _proxy;
 };
 
 

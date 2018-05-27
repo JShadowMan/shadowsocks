@@ -33,12 +33,8 @@ class SsNetwork : public SsSelectorCallbackInterface {
 
     public:
         SsNetwork(NetworkFamily family, NetworkType type);
-        virtual ~SsNetwork();
+        ~SsNetwork() override;
 
-    protected:
-        SsNetwork(SOCKET fd, sockaddr_storage &ss);
-
-    public:
         bool listen(NetworkHost host, NetworkPort port);
         bool connect(NetworkHost host, NetworkPort port);
 
@@ -49,6 +45,8 @@ class SsNetwork : public SsSelectorCallbackInterface {
         void selectorCallback(SsSelector::SelectorEvent event) final;
 
     protected:
+        SsNetwork(SOCKET fd, sockaddr_storage &ss);
+
         virtual bool doListen(NetworkHost host, NetworkPort port) = 0;
         virtual bool doConnect(NetworkHost host, NetworkPort port) = 0;
 
