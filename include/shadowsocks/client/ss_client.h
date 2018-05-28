@@ -17,12 +17,7 @@ class SsClient {
     public:
         SsClient(NetworkHost host, NetworkPort port);
         static void createClient(NetworkHost host, NetworkPort port);
-
-    public:
-        static bool hasDaemon();
-
-    public:
-        void startEventLoop();
+        static void startProxyService();
 
     private:
         SsTcpRelay _tcpRelay;

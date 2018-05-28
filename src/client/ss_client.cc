@@ -12,16 +12,15 @@ SsClient::SsClient(NetworkHost host, NetworkPort port) :
 }
 
 // start client to receive browser data and send encrypt data to ss-server
-void SsClient::startEventLoop() {
-    _tcpRelay.startProxy(_host, _port);
-    _udpRelay.startProxy(_host, _port);
+void SsClient::startProxyService() {
+    for (auto &pair : _clients) {
+        auto &client = pair.second;
+
+        client->_tcpRelay.startProxy(client->_host, client->_port);
+        client->_udpRelay.startProxy(client->_host, client->_port);
+    }
 
     SsSelector::startEventLoop();
-}
-
-// check daemon exists
-bool SsClient::hasDaemon() {
-    return false;
 }
 
 // create shadowsocks client
@@ -31,5 +30,8 @@ void SsClient::createClient(NetworkHost host, NetworkPort port) {
 
     if (_clients.find(key) != _clients.end()) {
         SsLogger::error("duplicate shadowsocks client on %s:%d", host, port);
+        return;
     }
+
+    _clients[key] = std::make_shared<SsClient>(host, port);
 }

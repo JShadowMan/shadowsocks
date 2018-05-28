@@ -69,7 +69,7 @@ void SsNetwork::createSocket() {
     if (_socket == INVALID_SOCKET) {
         SsLogger::error("create socket error, errno = %d", errno);
     }
-    SsLogger::debug("created socket = %d", _socket);
+    SsLogger::verbose("created socket = %d", _socket);
 }
 
 // create `sockaddr_storage` by host and port

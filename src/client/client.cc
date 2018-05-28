@@ -9,10 +9,8 @@ int main(int argc, char *argv[]) {
     SsCore::initShadowsocksEnvironments();
     SsCore::startDaemon();
 
-    auto client = std::make_shared<SsClient>("0.0.0.0", 9980);
-    if (!SsClient::hasDaemon()) {
-        client->startEventLoop();
-    }
+    SsClient::createClient("0.0.0.0", 9980);
+    SsClient::startProxyService();
 
     return 0;
 }
