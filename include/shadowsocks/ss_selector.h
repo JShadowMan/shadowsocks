@@ -38,6 +38,7 @@ class SsSelector {
 
         static void startEventLoop();
         static void stopEventLoop();
+        static void shutdownEventLoop();
 
     private:
         static PollCollection poll();

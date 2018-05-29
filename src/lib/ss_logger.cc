@@ -11,6 +11,11 @@ SsLogger::SsLogger(std::ostream &out) : _output(out) {
     // empty constructor
 }
 
+// SsLogger destructor
+SsLogger::~SsLogger() {
+    SsLogger::debug("SsLogger destructor");
+}
+
 // add logger to global
 void SsLogger::addLogger(SsLogger::LoggerName name, SsLogger *logger) {
     _loggers[name] = std::make_shared<SsLogger>(*logger);

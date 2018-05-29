@@ -35,3 +35,8 @@ void SsClient::createClient(NetworkHost host, NetworkPort port) {
 
     _clients[key] = std::make_shared<SsClient>(host, port);
 }
+
+// shutdown service and cleanup environments
+void SsClient::shutdownProxyService() {
+    _clients.clear();
+}

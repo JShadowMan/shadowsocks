@@ -151,6 +151,12 @@ void SsSelector::stopEventLoop() {
     SsLogger::debug("event loop has suspend");
 }
 
+// shutdown event loop
+void SsSelector::shutdownEventLoop() {
+    _events.clear();
+    _callbacks.clear();
+}
+
 // stop select for socket
 void SsSelector::remove(SOCKET fd) {
     _events.erase(fd);

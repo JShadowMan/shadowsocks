@@ -2,6 +2,10 @@
 #include "shadowsocks/ss_daemon.h"
 
 
+// static members initializing
+std::vector<std::function<void(void)>> SsCore::_callbacks{};
+
+
 /* static methods in daemon */
 #ifdef __linux__
 static void signalHandler(int signum);
@@ -74,6 +78,10 @@ void SsCore::initSocketEnvironments() {
 
 // shutdown shadowsocks
 void SsCore::shutdownShadowSocks(int state) {
+    for (auto &callback : _callbacks) {
+        callback();
+    }
+
     SsLogger::info("shadowsocks shutdown with state = %d", state);
     std::exit(state);
 }
@@ -153,6 +161,9 @@ bool signalHandler(DWORD signum) {
         case CTRL_C_EVENT:
             SsCore::shutdownShadowSocks(OPERATOR_FAILURE);
             return true;
+        case CTRL_CLOSE_EVENT:
+            SsCore::shutdownShadowSocks(OPERATOR_SUCCESS);
+            return true;
         default:
             SsLogger::debug("receive signal type = %d", signum);
             return false;
@@ -168,4 +179,9 @@ template <typename ...Args>
 ShadowsocksError<Args...>::ShadowsocksError(SsLogger::LoggerLevel level,
                                             const char *fmt, Args... args) {
     _message = SsLogger::log(level, fmt, args...);
+}
+
+// on exit callback
+void SsCore::atExit(std::function<void(void)> cb) {
+    _callbacks.push_back(cb);
 }

@@ -17,12 +17,16 @@ class SsCore {
         static void initShadowsocksEnvironments();
         static void shutdownShadowSocks(int state = OPERATOR_FAILURE);
         static void startDaemon();
+        static void atExit(std::function<void(void)> cb);
 
     private:
         static void printShadowsocksHeader(std::ostream &out);
         static void initDefaultLogger();
         static void initSocketEnvironments();
         static void catchSignal();
+
+    private:
+        static std::vector<std::function<void(void)>> _callbacks;
 };
 
 

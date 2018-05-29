@@ -66,6 +66,7 @@ class SsLogger {
 
     public:
         explicit SsLogger(std::ostream &out);
+        ~SsLogger();
 
     public:
         void setLevel(LoggerLevel level);

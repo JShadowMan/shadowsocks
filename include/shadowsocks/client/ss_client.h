@@ -18,6 +18,7 @@ class SsClient {
         SsClient(NetworkHost host, NetworkPort port);
         static void createClient(NetworkHost host, NetworkPort port);
         static void startProxyService();
+        static void shutdownProxyService();
 
     private:
         SsTcpRelay _tcpRelay;

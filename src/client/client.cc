@@ -9,6 +9,11 @@ int main(int argc, char *argv[]) {
     SsCore::initShadowsocksEnvironments();
     SsCore::startDaemon();
 
+    SsCore::atExit([] () {
+        SsSelector::shutdownEventLoop();
+        SsClient::shutdownProxyService();
+    });
+
     SsClient::createClient("0.0.0.0", 9980);
     SsClient::startProxyService();
 
