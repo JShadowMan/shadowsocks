@@ -25,8 +25,8 @@ class SsTcpNetwork : public SsNetwork {
 
     private:
         bool bind(NetworkHost host, NetworkPort port) const;
-        void acceptNewConnection();
-        void receiveDate();
+        void acceptConnection();
+        void receiveData();
         void receiveErrorDetect();
 };
 

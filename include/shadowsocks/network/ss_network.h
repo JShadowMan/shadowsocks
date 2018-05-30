@@ -4,6 +4,7 @@
 #include "shadowsocks/ss_types.h"
 #include "shadowsocks/ss_core.h"
 #include "shadowsocks/ss_selector.h"
+#include "shadowsocks/network/ss_buffer.h"
 
 
 /**
@@ -60,6 +61,9 @@ class SsNetwork : public SsSelectorCallbackInterface {
             return _state;
         }
 
+        SsBuffer::Buffer &getBuffer();
+        void bufferUpdate(SsBuffer::BufferBlockSize size);
+
         static sockaddr_storage socketAddr(NetworkHost host, NetworkPort port);
 
     private:
@@ -70,6 +74,7 @@ class SsNetwork : public SsSelectorCallbackInterface {
         NetworkFamily _family;
         NetworkType _type;
         NetworkState _state;
+        SsBuffer _buffers;
 
     friend std::ostream &operator<<(std::ostream &out, NetworkState state);
     friend std::ostream &operator<<(std::ostream &out, SsNetwork *network);

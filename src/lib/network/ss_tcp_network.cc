@@ -47,9 +47,9 @@ bool SsTcpNetwork::bind(NetworkHost host, NetworkPort port) const {
 // readable handler
 void SsTcpNetwork::readableHandler() {
     if (getState() == NetworkState::NS_LISTEN) {
-        acceptNewConnection();
+        acceptConnection();
     } else {
-        receiveDate();
+        receiveData();
     }
 }
 
@@ -58,7 +58,7 @@ void SsTcpNetwork::writableHandler() {
 }
 
 // from server network accept new client
-void SsTcpNetwork::acceptNewConnection() {
+void SsTcpNetwork::acceptConnection() {
     sockaddr_storage ss = {0};
 #ifdef __linux__
     socklen_t ssLength = sizeof(ss);
@@ -96,23 +96,23 @@ void SsTcpNetwork::acceptNewConnection() {
 }
 
 // receive data from network
-void SsTcpNetwork::receiveDate() {
-    static char buffer[1024] = {0};
-    int receiveCount = 0;
+void SsTcpNetwork::receiveData() {
+    int receiveByteCount = 0;
+    while (true) {
+        auto &buffer = getBuffer();
 
-    receiveCount = ::recv(getSocket(), buffer, BUFFER_BLOCK_SIZE, 0);
-    if (receiveCount == 0) {
-        throw SsNetworkClosed();
-    } else if (receiveCount == OPERATOR_FAILURE) {
-        try {
+        receiveByteCount = ::recv(getSocket(), buffer.first, buffer.second, 0);
+        if (receiveByteCount == 0) {
+            throw SsNetworkClosed();
+        } else if (receiveByteCount == OPERATOR_FAILURE) {
             receiveErrorDetect();
-        } catch (SsNetworkClosed &e) {
-            __throw_exception_again;
         }
-    } else {
-        //// test case
-        for (auto i = 0; i < receiveCount; ++i) {
-            std::printf("0x%02x%c", buffer[i], i == receiveCount - 1 ? '\n' : ' ');
+
+        auto temp = buffer.second;
+        bufferUpdate(receiveByteCount);
+
+        if (receiveByteCount != temp) {
+            break;
         }
     }
 }
@@ -132,5 +132,8 @@ void SsTcpNetwork::receiveErrorDetect() {
 #endif
 
 
-    // do nothing on other platform
+    if (errno != OPERATOR_SUCCESS) {
+        SsLogger::emergency("receive data error occurs, message = %s",
+                            strerror(errno));
+    }
 }

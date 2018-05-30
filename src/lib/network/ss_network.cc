@@ -192,3 +192,12 @@ void SsNetwork::selectorCallback(SsSelector::SelectorEvent event) {
     }
 }
 
+// get buffer position
+SsBuffer::Buffer &SsNetwork::getBuffer() {
+    return _buffers.getBuffer();
+}
+
+// update buffer state
+void SsNetwork::bufferUpdate(SsBuffer::BufferBlockSize size) {
+    _buffers.update(size);
+}

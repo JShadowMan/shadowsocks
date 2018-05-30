@@ -6,6 +6,7 @@ include_directories(${SHADOWSOCKS_INCLUDE_DIR})
 
 # add macro to cxx
 add_definitions(-DSHADOWSOCKS_MODULE="Server")
+add_definitions(-D__shadowsocks_server__)
 
 # shadowsocks-server src
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} SHADOWSOCKS_SERVER_SOURCES)

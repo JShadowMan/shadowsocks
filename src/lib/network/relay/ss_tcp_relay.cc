@@ -14,4 +14,3 @@ void SsTcpRelay::startProxy(NetworkHost host, NetworkPort port) {
     SsSelector::select(_proxy, {SsSelector::SelectorEvent::SE_READABLE});
     SsLogger::debug("SsTcpRelay ready to proxy tcp requests");
 }
-
