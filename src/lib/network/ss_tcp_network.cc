@@ -99,30 +99,34 @@ void SsTcpNetwork::acceptConnection() {
 void SsTcpNetwork::receiveData() {
     int receiveByteCount = 0;
     while (true) {
-        auto &buffer = getBuffer();
+        auto buffer = getBuffer();
 
         receiveByteCount = ::recv(getSocket(), buffer.first, buffer.second, 0);
         if (receiveByteCount == 0) {
             throw SsNetworkClosed();
         } else if (receiveByteCount == OPERATOR_FAILURE) {
-            receiveErrorDetect();
+            if (!receiveErrorDetect()) {
+                break;
+            }
         }
 
-        auto temp = buffer.second;
         bufferUpdate(receiveByteCount);
-
-        if (receiveByteCount != temp) {
+        if (receiveByteCount != buffer.second) {
             break;
         }
     }
+    printBuffer();
 }
 
 // detect error in receive data
-void SsTcpNetwork::receiveErrorDetect() {
+bool SsTcpNetwork::receiveErrorDetect() {
 #ifdef __windows__
     switch (WSAGetLastError()) {
         case CONNECTION_RESET_BY_PEER:
             throw SsNetworkClosed();
+        case CONNECTION_RECEIVE_NO_DATE:
+            SsLogger::debug("no data is queued to be read from the socket");
+            return false;
         default: {
             SsLogger::emergency("receive data error");
         }
@@ -136,4 +140,6 @@ void SsTcpNetwork::receiveErrorDetect() {
         SsLogger::emergency("receive data error occurs, message = %s",
                             strerror(errno));
     }
+
+    return true;
 }

@@ -174,6 +174,7 @@ bool SsNetwork::setNonBlocking() const {
 
 #endif
 
+
     SsLogger::verbose("toggle non-blocking for socket = %d", _socket);
     return true;
 }
@@ -193,11 +194,16 @@ void SsNetwork::selectorCallback(SsSelector::SelectorEvent event) {
 }
 
 // get buffer position
-SsBuffer::Buffer &SsNetwork::getBuffer() {
+SsBuffer::Buffer SsNetwork::getBuffer() {
     return _buffers.getBuffer();
 }
 
 // update buffer state
 void SsNetwork::bufferUpdate(SsBuffer::BufferBlockSize size) {
     _buffers.update(size);
+}
+
+// print buffer to stdout
+void SsNetwork::printBuffer() {
+    std::cout << _buffers;
 }

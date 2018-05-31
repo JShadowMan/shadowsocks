@@ -124,6 +124,7 @@
 #ifdef __linux__
 #elif __windows__
 #define CONNECTION_RESET_BY_PEER       (10054)
+#define CONNECTION_RECEIVE_NO_DATE     (10035)
 
 
 #endif
@@ -141,6 +142,11 @@ using NetworkPort                       = int;
 
 // buffer
 #define BUFFER_BLOCK_SIZE               (4 * 1024)
-
+#define BUFFER_PRINT_SIZE               (8)
+#define BLOCK_GET_SIZE(BK)              (BUFFER_BLOCK_SIZE - (BK).second.second)
+#define BLOCK_START(BLOCK)              ((BLOCK).first.first)
+#define BLOCK_SPEC_POS(BK, POS)         (BLOCK_START(BK) + (POS))
+#define TO_BYTE(VAL)                    ((VAL) & 0xff)
+#define PRINT_BYTE(BYTE)                (std::printf("0x%02x ", TO_BYTE(BYTE)))
 
 #endif // __SHADOWSOCKS_TYPES_INCLUDED__

@@ -61,8 +61,9 @@ class SsNetwork : public SsSelectorCallbackInterface {
             return _state;
         }
 
-        SsBuffer::Buffer &getBuffer();
+        SsBuffer::Buffer getBuffer();
         void bufferUpdate(SsBuffer::BufferBlockSize size);
+        void printBuffer();
 
         static sockaddr_storage socketAddr(NetworkHost host, NetworkPort port);
 

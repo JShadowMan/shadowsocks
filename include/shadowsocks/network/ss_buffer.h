@@ -20,12 +20,20 @@ class SsBuffer {
 
     public:
         SsBuffer() = default;
+        SsBuffer(SsBuffer &) = delete;
+        SsBuffer(SsBuffer &&) = delete;
+        ~SsBuffer();
 
-        Buffer &getBuffer();
+        Buffer getBuffer();
         void update(BufferBlockSize size);
 
     private:
+        void createBufferBlock();
+
+    private:
         std::list<SsBuffer::BufferBlock> _buffers;
+
+    friend std::ostream &operator<<(std::ostream &out, SsBuffer &buffer);
 };
 
 
