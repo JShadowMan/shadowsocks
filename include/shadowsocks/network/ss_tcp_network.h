@@ -12,21 +12,26 @@
  *
  */
 class SsTcpNetwork : public SsNetwork {
+    protected:
+        using Connection = std::pair<SOCKET, sockaddr_storage>;
+
     public:
         explicit SsTcpNetwork(NetworkFamily family = NetworkFamily::NF_INET_4);
         SsTcpNetwork(SOCKET fd, sockaddr_storage &ss);
-        ~SsTcpNetwork() final = default;
+        ~SsTcpNetwork() override = default;
 
     protected:
         bool doListen(NetworkHost host, NetworkPort port) final;
         bool doConnect(NetworkHost host, NetworkPort port) final;
-        void readableHandler() final;
-        void writableHandler() final;
+
+        void readableHandler() override;
+        void writableHandler() override;
+
+        Connection acceptConnection();
+        void receiveData();
 
     private:
         bool bind(NetworkHost host, NetworkPort port) const;
-        void acceptConnection();
-        void receiveData();
         bool receiveErrorDetect();
 };
 

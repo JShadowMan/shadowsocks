@@ -2,7 +2,7 @@
 
 
 // SsTcpRelay constructor
-SsTcpRelay::SsTcpRelay() : _proxy(std::make_shared<SsTcpNetwork>()) {
+SsTcpRelay::SsTcpRelay() : _proxy(std::make_shared<SsTcpSession>()) {
 }
 
 // start proxy any requests

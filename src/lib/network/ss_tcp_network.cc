@@ -47,7 +47,10 @@ bool SsTcpNetwork::bind(NetworkHost host, NetworkPort port) const {
 // readable handler
 void SsTcpNetwork::readableHandler() {
     if (getState() == NetworkState::NS_LISTEN) {
-        acceptConnection();
+        auto pair = acceptConnection();
+
+        auto network = std::make_shared<SsTcpNetwork>(pair.first, pair.second);
+        SsSelector::select(network, {SsSelector::SelectorEvent::SE_READABLE});
     } else {
         receiveData();
     }
@@ -58,7 +61,7 @@ void SsTcpNetwork::writableHandler() {
 }
 
 // from server network accept new client
-void SsTcpNetwork::acceptConnection() {
+SsTcpNetwork::Connection SsTcpNetwork::acceptConnection() {
     sockaddr_storage ss = {0};
 #ifdef __linux__
     socklen_t ssLength = sizeof(ss);
@@ -91,8 +94,7 @@ void SsTcpNetwork::acceptConnection() {
         SsLogger::warning("current unsupported Ipv6 address convert");
     }
 
-    auto network = std::make_shared<SsTcpNetwork>(remote, ss);
-    SsSelector::select(network, {SsSelector::SelectorEvent::SE_READABLE});
+    return std::make_pair(remote, ss);
 }
 
 // receive data from network

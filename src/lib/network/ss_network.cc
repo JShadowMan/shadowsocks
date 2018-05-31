@@ -207,3 +207,8 @@ void SsNetwork::bufferUpdate(SsBuffer::BufferBlockSize size) {
 void SsNetwork::printBuffer() {
     std::cout << _buffers;
 }
+
+// check buffer size
+bool SsNetwork::bufferSizeCheck(unsigned int size) {
+    return _buffers.checkSize(size);
+}

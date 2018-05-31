@@ -23,15 +23,15 @@ SsBuffer::Buffer SsBuffer::getBuffer() {
     }
 
     auto &available = _buffers.back();
-    auto start = available.first.first + \
-        (BUFFER_BLOCK_SIZE - available.second.second);
-    return std::make_pair(start, available.second.second);
+    return std::make_pair(available.first.second, available.second.second);
 }
 
 // update buffer
 void SsBuffer::update(SsBuffer::BufferBlockSize size) {
     auto &available = _buffers.back();
     available.second.second -= size;
+    available.first.second += size;
+    _totalBytes += size;
 
     if (available.second.second == 0) {
         createBufferBlock();
@@ -42,12 +42,12 @@ void SsBuffer::update(SsBuffer::BufferBlockSize size) {
 void SsBuffer::createBufferBlock() {
     if (!_buffers.empty()) {
         _buffers.back().second.second = 0;
+        _buffers.back().first.second = nullptr;
     }
 
     auto bufferBlock = new char[BUFFER_BLOCK_SIZE];
-    auto bufferBlockEnd = bufferBlock + BUFFER_BLOCK_SIZE;
     _buffers.emplace_back(
-        std::make_pair(bufferBlock, bufferBlockEnd),
+        std::make_pair(bufferBlock, bufferBlock),
         std::make_pair(BUFFER_BLOCK_SIZE, BUFFER_BLOCK_SIZE)
     );
     SsLogger::debug("buffer block created, with size = %d", _buffers.size());
@@ -84,4 +84,20 @@ std::ostream &operator<<(std::ostream &out, SsBuffer &buffer) {
     }
 
     return out;
+}
+
+// check buffer size
+bool SsBuffer::checkSize(unsigned int size) {
+    return size <= _totalBytes;
+}
+
+// consume data
+SsBuffer::Data SsBuffer::getData() {
+    auto &front = _buffers.front();
+
+    return std::make_pair(_dataStart, front.first.second - _dataStart);
+}
+
+// update data position
+void SsBuffer::consumeData(int size) {
 }
