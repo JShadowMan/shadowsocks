@@ -12,17 +12,7 @@
  */
 class SsBuffer {
     public:
-        using BufferPosition = char *;
-        using BufferStart = BufferPosition;
-        using AvailableBuffer = BufferPosition;
-        using BufferBlockSize = int;
-        using AvailableBufferSize = int;
-        using BufferBlock = std::pair<
-            std::pair<BufferStart, AvailableBuffer>,
-            std::pair<BufferBlockSize, AvailableBufferSize>
-        >;
-        using Buffer = std::pair<BufferPosition, AvailableBufferSize>;
-        using Data = std::pair<BufferPosition, AvailableBufferSize>;
+        using BufferBlock = std::pair<char*, size_t>;
 
     public:
         SsBuffer() = default;
@@ -30,20 +20,13 @@ class SsBuffer {
         SsBuffer(SsBuffer &&) = delete;
         virtual ~SsBuffer();
 
-        Buffer getBuffer();
-        void update(BufferBlockSize size);
-        bool checkSize(unsigned int size);
-
-        Data getData();
-        void consumeData(int size);
+        BufferBlock getBufferBlock(size_t except);
+        void bufferBlockSizeFix(size_t except, size_t realSize);
 
     private:
-        void createBufferBlock();
-
-    private:
-        BufferPosition _dataStart;
-        unsigned _totalBytes = 0;
-        std::list<SsBuffer::BufferBlock> _buffers;
+        size_t _bufferStart = 0;
+        size_t _bufferSize = 0;
+        std::vector<char> _buffers;
 
     friend std::ostream &operator<<(std::ostream &out, SsBuffer &buffer);
 };

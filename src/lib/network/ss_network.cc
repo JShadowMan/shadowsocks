@@ -192,23 +192,3 @@ void SsNetwork::selectorCallback(SsSelector::SelectorEvent event) {
         SsSelector::remove(getSocket());
     }
 }
-
-// get buffer position
-SsBuffer::Buffer SsNetwork::getBuffer() {
-    return _buffers.getBuffer();
-}
-
-// update buffer state
-void SsNetwork::bufferUpdate(SsBuffer::BufferBlockSize size) {
-    _buffers.update(size);
-}
-
-// print buffer to stdout
-void SsNetwork::printBuffer() {
-    std::cout << _buffers;
-}
-
-// check buffer size
-bool SsNetwork::bufferSizeCheck(unsigned int size) {
-    return _buffers.checkSize(size);
-}

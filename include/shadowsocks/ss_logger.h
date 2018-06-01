@@ -72,7 +72,7 @@ class SsLogger {
         void setLevel(LoggerLevel level);
 
     public:
-        static void addLogger(LoggerName name, SsLogger *logger);
+        static void addLogger(LoggerName name, SsLoggerPtr logger);
 
     public:
         template <typename ...Args>

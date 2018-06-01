@@ -99,25 +99,27 @@ SsTcpNetwork::Connection SsTcpNetwork::acceptConnection() {
 
 // receive data from network
 void SsTcpNetwork::receiveData() {
-    int receiveByteCount = 0;
     while (true) {
-        auto buffer = getBuffer();
+        auto block = _buffers.getBufferBlock(BUFFER_BLOCK_SIZE);
+        auto receiveCount = ::recv(getSocket(), block.first, block.second, 0);
 
-        receiveByteCount = ::recv(getSocket(), buffer.first, buffer.second, 0);
-        if (receiveByteCount == 0) {
+        if (receiveCount == 0) {
             throw SsNetworkClosed();
-        } else if (receiveByteCount == OPERATOR_FAILURE) {
+        } else if (receiveCount == OPERATOR_FAILURE) {
             if (!receiveErrorDetect()) {
-                break;
+                _buffers.bufferBlockSizeFix(BUFFER_BLOCK_SIZE, 0);
+                return;
             }
         }
 
-        bufferUpdate(receiveByteCount);
-        if (receiveByteCount != buffer.second) {
+        if (receiveCount != BUFFER_BLOCK_SIZE) {
+            _buffers.bufferBlockSizeFix(BUFFER_BLOCK_SIZE,
+                                        (size_t) receiveCount);
             break;
         }
     }
-    printBuffer();
+
+    std::cout << _buffers << std::endl;
 }
 
 // detect error in receive data

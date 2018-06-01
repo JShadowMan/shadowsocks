@@ -61,22 +61,19 @@ class SsNetwork : public SsSelectorCallbackInterface {
             return _state;
         }
 
-        SsBuffer::Buffer getBuffer();
-        void bufferUpdate(SsBuffer::BufferBlockSize size);
-        void printBuffer();
-        bool bufferSizeCheck(unsigned int size);
-
         static sockaddr_storage socketAddr(NetworkHost host, NetworkPort port);
 
     private:
         void createSocket();
+
+    protected:
+        SsBuffer _buffers;
 
     private:
         SOCKET _socket;
         NetworkFamily _family;
         NetworkType _type;
         NetworkState _state;
-        SsBuffer _buffers;
 
     friend std::ostream &operator<<(std::ostream &out, NetworkState state);
     friend std::ostream &operator<<(std::ostream &out, SsNetwork *network);

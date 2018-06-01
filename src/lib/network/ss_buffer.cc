@@ -5,99 +5,44 @@
 // SsBuffer destructor
 SsBuffer::~SsBuffer() {
     SsLogger::debug("SsBuffer destruct with block size = %d", _buffers.size());
-
-    for (auto &pair : _buffers) {
-        delete[] pair.first.first;
-        pair.first.first = nullptr;
-        pair.first.second = nullptr;
-
-        pair.second.first = 0;
-        pair.second.second = 0;
-    }
+    _buffers.clear();
 }
 
-// get buffer position
-SsBuffer::Buffer SsBuffer::getBuffer() {
-    if (_buffers.empty()) {
-        createBufferBlock();
-    }
+// create buffer block
+SsBuffer::BufferBlock SsBuffer::getBufferBlock(size_t except) {
+    _bufferSize += except;
+    _buffers.resize(_bufferSize + except, 0x00);
+    SsLogger::debug("Offset = %d, Size = %d, Capacity = %d",
+                    _bufferStart, _bufferSize, _buffers.size());
 
-    auto &available = _buffers.back();
-    return std::make_pair(available.first.second, available.second.second);
-}
-
-// update buffer
-void SsBuffer::update(SsBuffer::BufferBlockSize size) {
-    auto &available = _buffers.back();
-    available.second.second -= size;
-    available.first.second += size;
-    _totalBytes += size;
-
-    if (available.second.second == 0) {
-        createBufferBlock();
-    }
-}
-
-// create new buffer block
-void SsBuffer::createBufferBlock() {
-    if (!_buffers.empty()) {
-        _buffers.back().second.second = 0;
-        _buffers.back().first.second = nullptr;
-    }
-
-    auto bufferBlock = new char[BUFFER_BLOCK_SIZE];
-    _buffers.emplace_back(
-        std::make_pair(bufferBlock, bufferBlock),
-        std::make_pair(BUFFER_BLOCK_SIZE, BUFFER_BLOCK_SIZE)
+    return std::make_pair(
+        &_buffers[_bufferStart + _bufferSize - except], except
     );
-    SsLogger::debug("buffer block created, with size = %d", _buffers.size());
 }
 
-// output buffer
+// fix last buffer block size
+void SsBuffer::bufferBlockSizeFix(size_t except, size_t realSize) {
+    _bufferSize += -except + realSize;
+    SsLogger::debug("FIXED Offset = %d, Size = %d, Capacity = %d",
+                    _bufferStart, _bufferSize, _buffers.size());
+}
+
+// output buffer blocks
 std::ostream &operator<<(std::ostream &out, SsBuffer &buffer) {
-    out << "BufferBlockSize: " << buffer._buffers.size() << std::endl;
-    for (auto i = 0U; i < buffer._buffers.size(); ++i) {
-        auto it = std::next(buffer._buffers.begin(), i);
-        std::printf("\tBuffer_%d<%4d>: ", i, BLOCK_GET_SIZE(*it));
-
-        if (BLOCK_GET_SIZE(*it) <= 2 * BUFFER_PRINT_SIZE) {
-            for (auto j = 0; j < BLOCK_GET_SIZE(*it); ++j) {
-                PRINT_BYTE(*BLOCK_SPEC_POS(*it, j));
-            }
-        } else if (BLOCK_GET_SIZE(*it) > 2 * BUFFER_PRINT_SIZE) {
-            auto index = 0;
-            for (auto j = BUFFER_PRINT_SIZE; abs(j) <= BUFFER_PRINT_SIZE; --j) {
-                if (j > 0) {
-                    PRINT_BYTE(*BLOCK_SPEC_POS(*it, BUFFER_PRINT_SIZE - j));
-                } else if (j == 0) {
-                    out << "\t...\t";
-                } else {
-                    index = BLOCK_GET_SIZE(*it) - 1 - BUFFER_PRINT_SIZE - j;
-                    if (index >= 0) {
-                        PRINT_BYTE(*BLOCK_SPEC_POS(*it, index));
-                    }
-                }
-            }
+    out << "BufferSize: " << buffer._bufferSize << std::endl << "\t";
+    if (buffer._bufferSize <= 2 * BUFFER_PRINT_SIZE) {
+        for (auto i = buffer._bufferStart; i < buffer._bufferSize; ++i) {
+            std::printf("0x%02x ", buffer._buffers[i]);
         }
-
-        out << std::endl;
+    } else {
+        for (auto i = buffer._bufferStart; i < BUFFER_PRINT_SIZE; ++i) {
+            std::printf("0x%02x ", buffer._buffers[i]);
+        }
+        out << "\t...\t";
+        for (auto i = -BUFFER_PRINT_SIZE; i < 0; ++i) {
+            std::printf("0x%02x ", buffer._buffers[buffer._bufferSize + i]);
+        }
     }
 
     return out;
-}
-
-// check buffer size
-bool SsBuffer::checkSize(unsigned int size) {
-    return size <= _totalBytes;
-}
-
-// consume data
-SsBuffer::Data SsBuffer::getData() {
-    auto &front = _buffers.front();
-
-    return std::make_pair(_dataStart, front.first.second - _dataStart);
-}
-
-// update data position
-void SsBuffer::consumeData(int size) {
 }

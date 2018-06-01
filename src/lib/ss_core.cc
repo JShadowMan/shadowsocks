@@ -45,7 +45,7 @@ void SsCore::initShadowsocksEnvironments() {
 
 // logger initializing
 void SsCore::initDefaultLogger() {
-    auto logger = new SsLogger(std::cout);
+    auto logger = std::make_shared<SsLogger>(std::cout);
 
 #ifdef __debug__
     logger->setLevel(SsLogger::LoggerLevel::LL_DEBUG);

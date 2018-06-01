@@ -17,8 +17,8 @@ SsLogger::~SsLogger() {
 }
 
 // add logger to global
-void SsLogger::addLogger(SsLogger::LoggerName name, SsLogger *logger) {
-    _loggers[name] = std::make_shared<SsLogger>(*logger);
+void SsLogger::addLogger(SsLogger::LoggerName name, SsLoggerPtr logger) {
+    _loggers[name] = logger;
 }
 
 // set level of logger
