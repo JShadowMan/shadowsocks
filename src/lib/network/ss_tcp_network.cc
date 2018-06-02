@@ -1,3 +1,5 @@
+#include <utility>
+
 #include "shadowsocks/network/ss_tcp_network.h"
 
 
@@ -23,8 +25,9 @@ bool SsTcpNetwork::doListen(NetworkHost host, NetworkPort port) {
 
 // do connect for tcp network
 bool SsTcpNetwork::doConnect(NetworkHost host, NetworkPort port) {
-    SsLogger::debug("connecting to %s:%d", host, port);
-    return false;
+    sockaddr_storage addr = socketAddr(host, port);
+    auto connectAddr = (sockaddr*) &addr;
+    return ::connect(getSocket(), connectAddr, sizeof(addr)) == OPERATOR_SUCCESS;
 }
 
 // tcp network bind a socket addr
@@ -101,7 +104,7 @@ SsTcpNetwork::Connection SsTcpNetwork::acceptConnection() {
 void SsTcpNetwork::receiveData() {
     while (true) {
         auto block = _buffers.getBufferBlock(BUFFER_BLOCK_SIZE);
-        auto receiveCount = ::recv(getSocket(), block.first, block.second, 0);
+        auto receiveCount = ::recv(getSocket(), (char*)block.first, block.second, 0);
 
         if (receiveCount == 0) {
             throw SsNetworkClosed();

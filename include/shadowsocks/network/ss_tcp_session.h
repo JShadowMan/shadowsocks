@@ -13,7 +13,7 @@
  */
 class SsTcpSession : public SsTcpNetwork {
     public:
-        enum class SessionState : uint8_t {
+        enum class SessionStage : uint8_t {
             SS_INIT = 0x00,
             SS_REQUEST = 0x01,
             SS_ESTABLISHMENT = 0xff
@@ -27,8 +27,16 @@ class SsTcpSession : public SsTcpNetwork {
     private:
         void onDataReceived();
 
+        void initStageHandle();
+        void requestStageHandle();
+        void establishmentStageHandle();
+
+        void ipv4RequestHandle();
+        void ipv6RequestHandle();
+        void domainRequestHandle();
+
     private:
-        SessionState _stage = SessionState::SS_INIT;
+        SessionStage _stage = SessionStage::SS_INIT;
 };
 
 

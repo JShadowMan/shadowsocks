@@ -30,6 +30,7 @@ class SsTcpNetwork : public SsNetwork {
         Connection acceptConnection();
         void receiveData();
 
+
     private:
         bool bind(NetworkHost host, NetworkPort port) const;
         bool receiveErrorDetect();
