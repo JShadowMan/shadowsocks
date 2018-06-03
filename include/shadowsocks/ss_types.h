@@ -145,4 +145,8 @@ using NetworkPort                       = int;
 #define BUFFER_PRINT_SIZE               (8)
 
 
+// numbers
+#define BYTE(VAL)                       ((VAL) & 0xff)
+
+
 #endif // __SHADOWSOCKS_TYPES_INCLUDED__

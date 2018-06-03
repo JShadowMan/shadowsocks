@@ -1,9 +1,6 @@
 #include "shadowsocks/network/ss_tcp_session.h"
 
 
-using SsLogger::warning;
-
-
 // SsTcpSession constructor
 SsTcpSession::SsTcpSession(SsNetwork::NetworkFamily family) :
     SsTcpNetwork(family) {
@@ -49,24 +46,29 @@ void SsTcpSession::initStageHandle() {
     if (size != 0xff && _buffers.checkDataSize(2 + size)) {
         auto handshake = _buffers.getDataBlock(2 + size);
         if (handshake[0] != 5) {
-            warning("session closed, because handshake not socks5 protocol");
+            SsLogger::warning(
+                "session closed, because handshake not socks5 protocol");
             throw SsNetworkClosed();
         }
 
         auto it = std::find(std::next(handshake.begin(), 1), handshake.end(), 0);
         if (it == handshake.end()) {
-            warning("session closed, because only supported NO AUTHENTICATION");
+            SsLogger::warning(
+                "session closed, because only supported NO AUTHENTICATION");
+
             ::send(getSocket(), "\x05\xff", 2, 0);
             return;
         }
 
         std::stringstream ss;
+#ifdef __debug__
         for (auto i = 2U; i < handshake.size(); ++i) {
-            ss << "0x" << std::hex << handshake[i] << std::dec << " ";
+            ss << "0x" << std::hex << BYTE(handshake[i]) << std::dec << " ";
         }
+#endif
 
-        SsLogger::debug("receive handshake, Ver = %d, NMETHOD=%d, METHOD = %s",
-            handshake[0], handshake[1], ss.str()
+        SsLogger::debug("receive handshake, Ver= %d, NMETHOD= %d, METHOD= %s",
+            BYTE(handshake[0]), BYTE(handshake[1]), ss.str()
         );
 
         ::send(getSocket(), "\x05\x00", 2, 0);
@@ -97,7 +99,8 @@ void SsTcpSession::ipv4RequestHandle() {
     if (_buffers.checkDataSize(10)) {
         auto request = _buffers.getDataBlock(10);
         if (request[0] != 5) {
-            warning("session closed, because handshake not socks5 protocol");
+            SsLogger::warning(
+                "session closed, because handshake not socks5 protocol");
             throw SsNetworkClosed();
         }
 
@@ -111,7 +114,8 @@ void SsTcpSession::ipv6RequestHandle() {
     if (_buffers.checkDataSize(22)) {
         auto request = _buffers.getDataBlock(22);
         if (request[0] != 5) {
-            warning("session closed, because handshake not socks5 protocol");
+            SsLogger::warning(
+                "session closed, because handshake not socks5 protocol");
             throw SsNetworkClosed();
         }
 
@@ -122,14 +126,23 @@ void SsTcpSession::ipv6RequestHandle() {
 // domain request
 void SsTcpSession::domainRequestHandle() {
     // 1(Ver) + 1(CMD) + 1(RSV) + 1(ATYP) + Size(1) _(Address) + 2(Port)
-    auto size = _buffers.peekData(4, 0xff);
-    if (size != 0xff && _buffers.checkDataSize(7 + size)) {
-        auto request = _buffers.getDataBlock(7 + size);
+    auto domainSize = _buffers.peekData(4, 0xff);
+    if (domainSize != 0xff && _buffers.checkDataSize(7 + domainSize)) {
+        auto request = _buffers.getDataBlock(7 + domainSize);
         if (request[0] != 5) {
-            warning("session closed, because handshake not socks5 protocol");
+            SsLogger::warning(
+                "session closed, because handshake not socks5 protocol");
             throw SsNetworkClosed();
         }
 
-        SsLogger::debug("domain request");
+        std::stringstream domain;
+        for (auto i = 0U; i < domainSize; ++i) {
+            domain << request[5 + i];
+        }
+
+        SsLogger::debug("domain request, VER= %d, CMD= %d, RSV= %d, ATYP= %d, LEN= %d, ADDR= %s, PORT= %d",
+            BYTE(request[0]), BYTE(request[1]), BYTE(request[2]), BYTE(request[3]),
+            BYTE(request[4]), domain.str(), ((request[request.size() - 2] & 0xff) << 8) |  (request[request.size() - 1] & 0xff)
+        );
     }
 }
