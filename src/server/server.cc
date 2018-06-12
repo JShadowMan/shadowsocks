@@ -1,10 +1,9 @@
-#include "shadowsocks/ss_core.h"
-#include "shadowsocks/server/ss_server.h"
+#include <iostream>
+#include "ss_config.h"
 
 
-/**
- * entry of shadowsocks-server
- */
 int main(int argc, char *argv[]) {
+    std::cout << APPLICATION_NAME << std::endl;
+
     return 0;
 }

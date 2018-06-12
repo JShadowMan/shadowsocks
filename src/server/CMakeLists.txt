@@ -1,20 +1,11 @@
-# shadowsocks client
-set(SHADOWSOCKS_MODULE ss-server)
+cmake_minimum_required(VERSION 3.8)
 
-# include dir
-include_directories(${SHADOWSOCKS_INCLUDE_DIR})
+# -- shadowsocks-client detail
+set(SHADOWSOCKS_MODULE_NAME ss-server)
 
-# add macro to cxx
-add_definitions(-DSHADOWSOCKS_MODULE="Server")
-add_definitions(-D__shadowsocks_server__)
+# -- client sources
+aux_source_directory(${SHADOWSOCKS_SOURCES}/server SHADOWSOCKS_MODULE_SOURCES)
 
-# shadowsocks-server src
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} SHADOWSOCKS_SERVER_SOURCES)
-
-# shadowsocks-server target
-add_executable(
-    ${SHADOWSOCKS_MODULE}
-        ${SHADOWSOCKS_SOURCES}
-        ${SHADOWSOCKS_INCLUDE_DIR}
-        ${SHADOWSOCKS_SERVER_SOURCES}
-)
+# -- exeable generated
+add_executable(${SHADOWSOCKS_EXECUTEABLE}
+        ${SHADOWSOCKS_MODULE_NAME} ${SHADOWSOCKS_MODULE_SOURCES})

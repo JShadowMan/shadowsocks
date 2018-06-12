@@ -1,20 +1,11 @@
-# shadowsocks client
-set(SHADOWSOCKS_MODULE ss-cli)
+cmake_minimum_required(VERSION 3.8)
 
-# include dir
-include_directories(${SHADOWSOCKS_INCLUDE_DIR})
+# -- shadowsocks-client detail
+set(SHADOWSOCKS_MODULE_NAME ss-cli)
 
-# add macro to cxx
-add_definitions(-DSHADOWSOCKS_MODULE="Client")
-add_definitions(-D__shadowsocks_client__)
+# -- client sources
+aux_source_directory(${SHADOWSOCKS_SOURCES}/client SHADOWSOCKS_MODULE_SOURCES)
 
-# shadowsocks-server src
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} SHADOWSOCKS_CLIENT_SOURCES)
-
-# build target
-add_executable(
-    ${SHADOWSOCKS_MODULE}
-        ${SHADOWSOCKS_SOURCES}
-        ${SHADOWSOCKS_INCLUDE_DIR}
-        ${SHADOWSOCKS_CLIENT_SOURCES}
-)
+# -- exeable generated
+add_executable(${SHADOWSOCKS_MODULE_NAME}
+        ${SHADOWSOCKS_LIBRARIES_SOURCES} ${SHADOWSOCKS_MODULE_SOURCES})
