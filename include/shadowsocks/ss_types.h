@@ -5,6 +5,7 @@
 // config by auto generated
 #include "ss_config.h"
 
+
 // standard headers
 #include <map>
 #include <list>
@@ -22,7 +23,9 @@
 #include <iostream>
 #include <algorithm>
 #include <functional>
+#include <forward_list>
 #include <initializer_list>
+
 
 // platform headers
 #if defined(__platform_linux__)
@@ -36,15 +39,15 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
-
-
 #elif defined(__platform_windows__)
 #include <Windows.h>
 #include <WinSock2.h>
 #include <ws2tcpip.h>
-
-
 #endif
+
+
+#define OPERATOR_SUCCESS                (0)
+#define OPERATOR_FAILURE                (-1)
 
 
 #endif // __SHADOWSOCKS_TYPES_INCLUDED__
