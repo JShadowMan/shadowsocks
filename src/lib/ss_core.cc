@@ -1,6 +1,5 @@
 #include "shadowsocks/ss_core.h"
-#include "shadowsocks/ss_logger.h"
-
+#define DEBUG_LOGGER_NAME       ("debug")
 
 // SsCore static members
 std::vector<std::function<void()>> SsCore::_exitCallbacks;
@@ -11,7 +10,6 @@ void SsCore::initEnvironments() {
     std::atexit(&SsCore::shutdownHandler);
 
     socketStartup();
-    coreExitHandler();
 }
 
 // on internal error occurs, cleanup resources
@@ -34,20 +32,27 @@ void SsCore::socketStartup() {
         SsLogger::emergency("Socket environment startup failure on windows");
     }
 
-    auto cleanupHandler = [] () {
+    auto socketCleanup = [] () {
         if (WSACleanup() != OPERATOR_SUCCESS) {
             SsLogger::emergency("Socket environment cleanup failure");
         }
     };
-    SsCore::atExit(cleanupHandler);
+    SsCore::atExit(socketCleanup);
     SsLogger::debug("Socket environment startup on windows");
 #endif
 }
 
-// module exit callbacks
-void SsCore::coreExitHandler() {
-    atExit([] () {
-        // logger cleanup
-        SsLogger::cleanupLogger();
-    });
+// enable debug logger with stdout
+void SsCore::enableDebugLogger(SsLogger::LoggerLevel level) {
+    auto logger = std::make_shared<SsLogger>(std::cout);
+#if defined(__type_debug__)
+    logger->setLevel(level);
+#endif
+
+    SsLogger::addLogger(DEBUG_LOGGER_NAME, std::move(logger));
+}
+
+// disable debug logger
+void SsCore::disableDebugLogger() {
+    SsLogger::removeLogger(DEBUG_LOGGER_NAME);
 }

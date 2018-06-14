@@ -35,11 +35,6 @@ bool SsLogger::removeLogger(SsLogger::LoggerName name) {
     return true;
 }
 
-// remove all logger
-void SsLogger::cleanupLogger() {
-    _loggers.clear();
-}
-
 // set level of logger
 void SsLogger::setLevel(LoggerLevel level) {
     _level = level;

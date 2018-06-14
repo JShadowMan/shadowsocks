@@ -3,6 +3,7 @@
 
 
 #include "shadowsocks/ss_types.h"
+#include "shadowsocks/ss_logger.h"
 
 
 class SsCore {
@@ -10,10 +11,11 @@ class SsCore {
         static void initEnvironments();
         static void atExit(std::function<void()> callback);
         static void shutdownHandler();
+        static void enableDebugLogger(SsLogger::LoggerLevel level);
+        static void disableDebugLogger();
 
     private:
         static void socketStartup();
-        static void coreExitHandler();
 
     private:
         static std::vector<std::function<void()>> _exitCallbacks;

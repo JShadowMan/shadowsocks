@@ -74,7 +74,8 @@ configure_file(
 include_directories(${SHADOWSOCKS_INCLUDE} ${SHADOWSOCKS_CONFIG_INCLUDE})
 
 # -- auto search source files
-aux_source_directory(${SHADOWSOCKS_SOURCES}/lib SHADOWSOCKS_LIBRARIES_SOURCES)
+file(GLOB_RECURSE SHADOWSOCKS_LIBRARIES_SOURCES "${SHADOWSOCKS_SOURCES}/lib/*.cc")
+#aux_source_directory(${SHADOWSOCKS_SOURCES}/lib SHADOWSOCKS_LIBRARIES_SOURCES)
 
 # -- binaries target
 add_subdirectory(${SHADOWSOCKS_SOURCES}/client)

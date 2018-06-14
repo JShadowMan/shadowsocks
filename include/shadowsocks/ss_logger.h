@@ -74,7 +74,6 @@ class SsLogger {
         void setName(LoggerName name);
         static void addLogger(LoggerName name, SsLoggerPtr logger);
         static bool removeLogger(LoggerName name);
-        static void cleanupLogger();
 
         template <typename ...Args>
         static void verbose(Format fmt, Args ...args);
@@ -98,12 +97,12 @@ class SsLogger {
         static std::string log(SsLogger::LoggerLevel level,
                                Format fmt, Args ...args);
 
+        template <typename ...Args>
+        static std::string format(Format fmt, Args ...args);
+
     private:
         static std::string currentDate(Format fmt);
         static void log(LoggerLevel level, std::string message);
-
-        template <typename ...Args>
-        static std::string format(Format fmt, Args ...args);
 
     private:
         LoggerName _name = nullptr;
@@ -164,7 +163,7 @@ std::string SsLogger::log(SsLogger::LoggerLevel level,
                           SsLogger::Format fmt, Args... args) {
     std::string message = format(fmt, args...);
 
-    log(level, std::string(message));
+    log(level, message);
     if (level == SsLogger::LoggerLevel::LL_EMERGENCY) {
         std::exit(OPERATOR_FAILURE);
     }
