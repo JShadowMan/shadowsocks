@@ -50,4 +50,9 @@
 #define OPERATOR_FAILURE                (-1)
 
 
+#if !defined(INVALID_SOCKET)
+#define INVALID_SOCKET                  (~0)
+#endif
+
+
 #endif // __SHADOWSOCKS_TYPES_INCLUDED__

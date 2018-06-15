@@ -1,4 +1,3 @@
-#include "shadowsocks/ss_core.h"
 #include "shadowsocks/ss_logger.h"
 
 

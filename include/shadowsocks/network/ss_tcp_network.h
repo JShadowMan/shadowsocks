@@ -9,6 +9,11 @@ class SsTcpNetwork : public SsNetwork {
     public:
         explicit SsTcpNetwork(NetworkFamily family);
         SsTcpNetwork(Descriptor descriptor, Address address);
+        ConnectingTuple accept() final;
+
+    protected:
+        void doConnect(HostName host, HostPort port) final;
+        void doListen(HostName host, HostPort port) final;
 };
 
 

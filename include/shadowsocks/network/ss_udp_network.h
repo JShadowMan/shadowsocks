@@ -9,6 +9,11 @@ class SsUdpNetwork : public SsNetwork {
     public:
         explicit SsUdpNetwork(NetworkFamily family);
         SsUdpNetwork(Descriptor descriptor, Address address);
+        ConnectingTuple accept() final;
+
+    protected:
+        void doConnect(HostName host, HostPort port) final;
+        void doListen(HostName host, HostPort port) final;
 };
 
 

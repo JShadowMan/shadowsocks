@@ -26,6 +26,61 @@ SsNetwork::Descriptor SsNetwork::getDescriptor() {
     return _descriptor;
 }
 
+// connecting to host:port
+void SsNetwork::connect(SsNetwork::HostName host, SsNetwork::HostPort port) {
+    if (_state != NetworkState::NS_NONE) {
+        SsLogger::warning("cannot convert state form %s to %s",
+                          _state, NetworkState::NS_ESTABLISHED);
+    }
+    _state = NetworkState::NS_ESTABLISHED;
+
+    doConnect(host, port);
+}
+
+// listening on host:port
+void SsNetwork::listen(SsNetwork::HostName host, SsNetwork::HostPort port) {
+    if (_state != NetworkState::NS_NONE) {
+        SsLogger::warning("cannot convert state form %s to %s",
+                          _state, NetworkState::NS_LISTEN);
+    }
+    _state = NetworkState::NS_LISTEN;
+
+    doListen(host, port);
+}
+
+// connecting to host:port
+void SsNetwork::doConnect(SsNetwork::HostName host, SsNetwork::HostPort port) {
+    SsLogger::info("%s connecting to %s:%d", this, host, port);
+}
+
+// listening on host:port
+void SsNetwork::doListen(SsNetwork::HostName host, SsNetwork::HostPort port) {
+    SsLogger::info("%s listening on %s:%d", this, host, port);
+}
+
+// from server accept a new client
+SsNetwork::ConnectingTuple SsNetwork::accept() {
+    Descriptor client;
+    auto address = std::make_shared<SsNetwork::Address>();
+#if defined(__platform_linux__)
+    socklen_t length = sizeof(SsNetwork::Address);
+#elif defined(__platform_windows__)
+    int length = sizeof(SsNetwork::Address);
+#endif
+
+    if (_state != NetworkState::NS_LISTEN) {
+        SsLogger::error("accept client from non-listening network");
+        return {INVALID_SOCKET, address};
+    }
+
+    client = ::accept(getDescriptor(), (sockaddr*) address.get(), &length);
+    if (client == INVALID_SOCKET || client < 0) {
+        SsLogger::error("accept connection error from %s", this);
+    }
+
+    return {client, address};
+}
+
 // network toString and output
 std::ostream &operator<<(std::ostream &o, SsNetwork *network) {
     o << "SsNetwork["
@@ -69,3 +124,4 @@ std::ostream &operator<<(std::ostream &o, SsNetwork::NetworkState &state) {
 
     return o;
 }
+

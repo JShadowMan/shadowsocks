@@ -24,6 +24,7 @@ class SsNetwork {
 #elif defined(__platform_windows__)
         using Descriptor = SOCKET;
 #endif
+        using ConnectingTuple = std::pair<Descriptor, std::shared_ptr<Address>>;
 
     protected:
         enum class NetworkState : uint8_t {
@@ -37,6 +38,13 @@ class SsNetwork {
         SsNetwork(Descriptor descriptor, Address address, NetworkType type);
         virtual ~SsNetwork();
         Descriptor getDescriptor();
+        void connect(HostName host, HostPort port);
+        void listen(HostName host, HostPort port);
+        virtual ConnectingTuple accept();
+
+    protected:
+        virtual void doConnect(HostName host, HostPort port);
+        virtual void doListen(HostName host, HostPort port);
 
     private:
         NetworkFamily _family;
