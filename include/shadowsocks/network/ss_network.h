@@ -3,9 +3,10 @@
 
 
 #include "shadowsocks/ss_types.h"
+#include "shadowsocks/ss_selector.h"
 
 
-class SsNetwork {
+class SsNetwork : public SsSelectorHandler {
     public:
         enum class NetworkFamily : uint8_t {
             NF_INET_4 = AF_INET,
@@ -19,11 +20,7 @@ class SsNetwork {
         using HostName = const char *;
         using HostPort = int;
         using Address = sockaddr_storage;
-#if defined(__platform_linux__)
-        using Descriptor = int;
-#elif defined(__platform_windows__)
-        using Descriptor = SOCKET;
-#endif
+        using Descriptor = SsSelector::Descriptor;
         using ConnectingTuple = std::pair<Descriptor, std::shared_ptr<Address>>;
 
     protected:
@@ -36,8 +33,8 @@ class SsNetwork {
     public:
         SsNetwork(NetworkFamily family, NetworkType type);
         SsNetwork(Descriptor descriptor, Address address, NetworkType type);
-        virtual ~SsNetwork();
-        Descriptor getDescriptor();
+        ~SsNetwork() override;
+        Descriptor getDescriptor() const final;
         void connect(HostName host, HostPort port);
         void listen(HostName host, HostPort port);
         virtual ConnectingTuple accept();

@@ -22,7 +22,7 @@ SsNetwork::~SsNetwork() {
 }
 
 // get network descriptor
-SsNetwork::Descriptor SsNetwork::getDescriptor() {
+SsNetwork::Descriptor SsNetwork::getDescriptor() const {
     return _descriptor;
 }
 
@@ -70,11 +70,11 @@ SsNetwork::ConnectingTuple SsNetwork::accept() {
 
     if (_state != NetworkState::NS_LISTEN) {
         SsLogger::error("accept client from non-listening network");
-        return {INVALID_SOCKET, address};
+        return {INVALID_DESCRIPTOR, address};
     }
 
     client = ::accept(getDescriptor(), (sockaddr*) address.get(), &length);
-    if (client == INVALID_SOCKET || client < 0) {
+    if (client == INVALID_DESCRIPTOR || client < 0) {
         SsLogger::error("accept connection error from %s", this);
     }
 

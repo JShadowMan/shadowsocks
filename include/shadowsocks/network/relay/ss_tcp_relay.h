@@ -3,14 +3,23 @@
 
 
 #include "shadowsocks/ss_types.h"
+#include "shadowsocks/network/ss_tcp_network.h"
 
 
 class SsTcpRelay {
     public:
-        template <typename Type>
-        void before(std::function<void(std::vector<Type>)> callback);
-        template <typename Type>
-        void after(std::function<void(std::vector<Type>)> callback);
+        using Stream = std::vector<DATA_STREAM_UNIT>;
+        using StreamCallback = std::function<void(Stream&, Stream&)>;
+
+    public:
+        void before(StreamCallback callback);
+        void after(StreamCallback callback);
+
+    private:
+        std::shared_ptr<SsTcpNetwork> _source;
+        std::map<
+            SsNetwork::Descriptor, std::pair<SsTcpNetwork, SsTcpNetwork>
+        > _streams;
 };
 
 

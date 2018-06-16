@@ -50,9 +50,14 @@
 #define OPERATOR_FAILURE                (-1)
 
 
-#if !defined(INVALID_SOCKET)
-#define INVALID_SOCKET                  (~0)
+#if defined(__platform_linux__)
+#define INVALID_DESCRIPTOR              (~0)
+#elif defined(__platform_windows__)
+#define INVALID_DESCRIPTOR              (INVALID_SOCKET)
 #endif
+
+
+#define DATA_STREAM_UNIT                u_char
 
 
 #endif // __SHADOWSOCKS_TYPES_INCLUDED__
