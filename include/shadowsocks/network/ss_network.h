@@ -6,7 +6,7 @@
 #include "shadowsocks/ss_selector.h"
 
 
-class SsNetwork : public SsSelectorHandler {
+class SsNetwork {
     public:
         enum class NetworkFamily : uint8_t {
             NF_INET_4 = AF_INET,
@@ -33,8 +33,8 @@ class SsNetwork : public SsSelectorHandler {
     public:
         SsNetwork(NetworkFamily family, NetworkType type);
         SsNetwork(Descriptor descriptor, Address address, NetworkType type);
-        ~SsNetwork() override;
-        Descriptor getDescriptor() const final;
+        ~SsNetwork();
+        Descriptor getDescriptor() const;
         void connect(HostName host, HostPort port);
         void listen(HostName host, HostPort port);
         virtual ConnectingTuple accept();

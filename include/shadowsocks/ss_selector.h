@@ -14,7 +14,7 @@
 #endif
 
 
-class SsSelectorHandler;
+class SsSelectorObject;
 
 
 class SsSelector {
@@ -23,26 +23,36 @@ class SsSelector {
             SE_READABLE = SELECTOR_EVENT_IN,
             SE_WRITABLE = SELECTOR_EVENT_OUT
         };
-        using HandlerPointer = std::shared_ptr<SsSelectorHandler>;
         using SelectorEvents = std::initializer_list<SelectorEvent>;
 #if defined(__platform_linux__)
         using Descriptor = int;
 #elif defined(__platform_windows__)
         using Descriptor = SOCKET;
 #endif
+        using SelectResult = std::vector<std::pair<Descriptor, SelectorEvent>>;
 
     public:
-        static void select(HandlerPointer handler, SelectorEvents events);
+        SsSelector();
+        void add(Descriptor descriptor, SelectorEvents events);
+        void remove(Descriptor descriptor);
+        void movify(Descriptor descriptor, SelectorEvents events);
+        SelectResult select(int timeout);
+
+    private:
+#if defined(__platform_linux__)
+        using SelectObject = int;
+#elif defined(__platform_windows__)
+        using SelectObject = int;
+#endif
+
+    private:
+        std::map<SsSelector::Descriptor, SsSelectorObject> _objects;
 };
 
 
-class SsSelectorHandler {
+class SsSelectorObject {
     public:
-        virtual ~SsSelectorHandler() = default;
-        virtual SsSelector::Descriptor getDescriptor() const {
-            return INVALID_DESCRIPTOR;
-        }
-        virtual void eventCallback(SsSelector::SelectorEvent event) {}
+        SsSelectorObject(SsSelector::SelectorEvents events);
 };
 
 
