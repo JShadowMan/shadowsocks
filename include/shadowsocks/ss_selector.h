@@ -14,14 +14,16 @@
 #endif
 
 
-class SsSelectorObject;
-
-
 class SsSelector {
     public:
         enum class SelectorEvent : uint8_t {
             SE_READABLE = SELECTOR_EVENT_IN,
             SE_WRITABLE = SELECTOR_EVENT_OUT
+        };
+        enum class SelectorState : uint8_t {
+            SS_TIMEOUT = 0xff,
+            SS_SUCCESS = 0x00,
+            SS_FAILURE = 0x01
         };
         using SelectorEvents = std::initializer_list<SelectorEvent>;
 #if defined(__platform_linux__)
@@ -29,30 +31,23 @@ class SsSelector {
 #elif defined(__platform_windows__)
         using Descriptor = SOCKET;
 #endif
-        using SelectResult = std::vector<std::pair<Descriptor, SelectorEvent>>;
+        using SelectResult = std::pair<
+            SelectorState,
+            std::vector<
+                std::pair<Descriptor, std::tuple<bool, bool>>
+            >
+        >;
 
     public:
         SsSelector();
+        ~SsSelector();
         void add(Descriptor descriptor, SelectorEvents events);
         void remove(Descriptor descriptor);
         void movify(Descriptor descriptor, SelectorEvents events);
         SelectResult select(int timeout);
 
     private:
-#if defined(__platform_linux__)
-        using SelectObject = int;
-#elif defined(__platform_windows__)
-        using SelectObject = int;
-#endif
-
-    private:
-        std::map<SsSelector::Descriptor, SsSelectorObject> _objects;
-};
-
-
-class SsSelectorObject {
-    public:
-        SsSelectorObject(SsSelector::SelectorEvents events);
+        std::map<Descriptor, uint8_t> _objects;
 };
 
 

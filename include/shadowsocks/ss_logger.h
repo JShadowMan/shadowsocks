@@ -215,4 +215,12 @@ std::string SsLogger::format(Format fmt, Args... args) {
 }
 
 
+#define VVV(FMT, ARGS...)           SsLogger::verbose(FMT, ##ARGS)
+#define DBG(FMT, ARGS...)           SsLogger::debug(FMT, ##ARGS)
+#define INF(FMT, ARGS...)           SsLogger::info(FMT, ##ARGS)
+#define WARN(FMT, ARGS...)          SsLogger::warning(FMT, ##ARGS)
+#define ERR(FMT, ARGS...)           SsLogger::error(FMT, ##ARGS)
+#define EXT(FMT, ARGS...)           SsLogger::emergency(FMT, ##ARGS)
+
+
 #endif // __SHADOWSOCKS_LOGGER_INCLUDED__
