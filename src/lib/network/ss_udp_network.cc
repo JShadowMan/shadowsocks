@@ -15,7 +15,7 @@ SsUdpNetwork::SsUdpNetwork(SsNetwork::Descriptor descriptor,
 
 // udp server unsupported accept connection
 SsNetwork::ConnectingTuple SsUdpNetwork::accept() {
-    return {INVALID_SOCKET, nullptr};
+    return {INVALID_DESCRIPTOR, nullptr};
 }
 
 // UDP network unsupported connect action

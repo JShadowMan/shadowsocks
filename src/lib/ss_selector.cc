@@ -1,4 +1,3 @@
-#include <shlobj.h>
 #include "shadowsocks/ss_selector.h"
 #include "shadowsocks/ss_logger.h"
 
@@ -10,51 +9,115 @@ SsSelector::SsSelector() : _objects({}) {
 
 // SsSelector destructor
 SsSelector::~SsSelector() {
+    _objects.clear();
     DBG("SsSelector closed");
 }
 
 // add an object to selector
 void SsSelector::add(SsSelector::Descriptor descriptor,
                      SsSelector::SelectorEvents events) {
-    if (_objects.find(descriptor) != _objects.end()) {
+    if (descriptorExists(descriptor)) {
         WARN("Duplicate register descriptor = %d to selector", descriptor);
     } else {
         DBG("Register descriptor = %d to selector with events = %s",
-              descriptor, events);
+              descriptor, "EVENTS");
+
+#if defined(__platform_linux__)
+        pollfd fd = { .fd = descriptor, .events = 0 };
         for (auto &event : events) {
-            _objects[descriptor] |= static_cast<>(event);
+            fd.events |= static_cast<uint8_t>(event);
         }
+        _objects.push_back(fd);
+#elif defined(__platform_windows__)
+        for (auto &event : events) {
+            _objects[descriptor] |= static_cast<uint8_t>(event);
+        }
+#endif
     }
 }
 
 // remove object from selector
 void SsSelector::remove(SsSelector::Descriptor descriptor) {
-    if (_objects.find(descriptor) == _objects.end()) {
+    if (descriptorExists(descriptor)) {
         WARN("Not found descriptor = %d in selector", descriptor);
     } else {
         DBG("Remove descriptor = %d in selector", descriptor);
+#if defined(__platform_linux__)
+        _objects.erase(std::remove_if(_objects.begin(), _objects.end(),
+            [&] (pollfd &fd) {
+                return fd.fd == descriptor;
+            }
+        ), _objects.end());
+#elif defined(__platform_windows__)
         _objects.erase(descriptor);
+#endif
     }
 }
 
 // modify object events attribute
 void SsSelector::movify(SsSelector::Descriptor descriptor,
                         SsSelector::SelectorEvents events) {
-    if (_objects.find(descriptor) == _objects.end()) {
+    if (descriptorExists(descriptor)) {
         WARN("Not found descriptor = %d in selector", descriptor);
     } else {
-        DBG("Modify descriptor = %d events to %s", descriptor, events);
+        DBG("Modify descriptor = %d events to %s", descriptor, "EVENTS");
+#if defined(__platform_linux__)
+        auto it = std::find_if(_objects.begin(), _objects.end(),
+            [&] (pollfd &fd){
+                return fd.fd == descriptor;
+            }
+        );
+
+        it->events = 0;
+        for (auto &event : events) {
+            it->events |= static_cast<uint8_t>(event);
+        }
+#elif defined(__platform_windows__)
         _objects[descriptor] = 0;
         for (auto &event : events) {
-            _objects[descriptor] |= static_cast<>(event);
+            _objects[descriptor] |= static_cast<uint8_t>(event);
         }
+#endif
     }
 }
 
 // start select all objects
 #if defined(__platform_linux__)
 SsSelector::SelectResult SsSelector::select(int timeout) {
-    static std::vector<pollfd> fds;
+    SelectResult result;
+    int pollResult = ::poll(&_objects[0], _objects.size(), timeout * 1000);
+    if (pollResult == OPERATOR_FAILURE) {
+        result.first = SelectorState::SS_FAILURE;
+    } else if (pollResult == 0) {
+        result.first = SelectorState::SS_TIMEOUT;
+    } else {
+        result.first = SelectorState::SS_SUCCESS;
+
+        for (auto &fd : _objects) {
+            auto descriptorReadable = false;
+            auto descriptorWritable = false;
+
+            if (fd.revents != 0) {
+                if (fd.revents & SELECTOR_EVENT_IN) {
+                    descriptorReadable = true;
+                }
+
+                if (fd.revents & SELECTOR_EVENT_OUT) {
+                    descriptorWritable = true;
+                }
+
+                result.second.push_back({fd.fd, {
+                    descriptorReadable, descriptorWritable
+                }});
+
+                if (--pollResult == 0) {
+                    break;
+                }
+            }
+        }
+    }
+
+    return result;
 }
 #elif defined(__platform_windows__)
 SsSelector::SelectResult SsSelector::select(int timeout) {
@@ -83,17 +146,15 @@ SsSelector::SelectResult SsSelector::select(int timeout) {
     } else {
         result.first = SelectorState::SS_SUCCESS;
 
-        uint8_t descriptorEvent = 0;
-        auto descriptorReadable = false;
-        auto descriptorWritable = false;
         for (auto &pair : _objects) {
+            auto descriptorReadable = false;
+            auto descriptorWritable = false;
+
             if (FD_ISSET(pair.first, &readable)) {
                 descriptorReadable = true;
-                descriptorEvent |= SELECTOR_EVENT_IN;
             }
             if (FD_ISSET(pair.first, &writable)) {
                 descriptorWritable = true;
-                descriptorEvent |= SELECTOR_EVENT_OUT;
             }
 
             if (descriptorReadable || descriptorWritable) {
@@ -111,3 +172,14 @@ SsSelector::SelectResult SsSelector::select(int timeout) {
     return result;
 }
 #endif
+
+// check descriptor exists
+bool SsSelector::descriptorExists(SsSelector::Descriptor &descriptor) {
+#if defined(__platform_linux__)
+    return std::find_if(_objects.begin(), _objects.end(), [&] (pollfd &fd) {
+        return fd.fd == descriptor;
+    }) != _objects.end();
+#elif defined(__platform_windows__)
+    return _objects.find(descriptor) == _objects.end();
+#endif
+}

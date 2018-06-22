@@ -33,9 +33,7 @@ class SsSelector {
 #endif
         using SelectResult = std::pair<
             SelectorState,
-            std::vector<
-                std::pair<Descriptor, std::tuple<bool, bool>>
-            >
+            std::vector<std::pair<Descriptor, std::pair<bool, bool>>>
         >;
 
     public:
@@ -47,7 +45,14 @@ class SsSelector {
         SelectResult select(int timeout);
 
     private:
+        bool descriptorExists(Descriptor &descriptor);
+
+    private:
+#if defined(__platform_linux__)
+        std::vector<pollfd> _objects;
+#elif defined(__platform_windows__)
         std::map<Descriptor, uint8_t> _objects;
+#endif
 };
 
 

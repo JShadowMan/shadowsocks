@@ -6,7 +6,8 @@ int main(int argc, char *argv[]) {
     SsCore::enableDebugLogger(SsLogger::LoggerLevel::LL_DEBUG);
     SsCore::initEnvironments();
 
-    auto tcpRelay = new SsTcpRelay();
+    auto selector = std::make_shared<SsSelector>();
+    auto tcpRelay = std::make_shared<SsTcpRelay>();
 
     return 0;
 }
